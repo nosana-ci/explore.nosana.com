@@ -1,8 +1,6 @@
-# Nosana Dashboard
+# Nosana explorer
 
-Nuxt 3 site for the [Nosana Explorer](https://dashboard.nosana.com).
-
-![Nosana Dashboard](/static/img/screenshot.jpg)
+Nuxt 4 site for the [Nosana Explorer](https://explorer.nosana.com).
 
 ## Build Setup
 
