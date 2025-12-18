@@ -101,7 +101,7 @@ const selectItem = async (item: { type: string; value: string }) => {
       router.push(`/jobs/${item.value}`);
       break;
     case "node":
-      router.push(`/host/${item.value}`);
+      router.push(`/hosts/${item.value}`);
       break;
     case "market":
       router.push(`/markets/${item.value}`);

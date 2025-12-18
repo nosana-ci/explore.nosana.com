@@ -1,108 +1,123 @@
 <template>
-  <nav class="explorer-navbar">
-    <div class="navbar-container">
-      <div class="section py-0">
-        <div class="container is-fluid">
-          <div class="navbar-content">
-            <!-- Left: Logo + Divider + Title -->
-            <div class="navbar-brand">
-              <nuxt-link to="/" class="navbar-logo">
-                <Logo width="160px" :animated="true" class="light-only" />
-                <Logo width="160px" :white="true" :animated="true" class="dark-only" />
-              </nuxt-link>
-              <div class="vertical-divider mx-4"></div>
-              <h2 class="title is-3 mb-0">{{ title }}</h2>
-            </div>
+  <div class="navbar-container">
+    <div class="section pb-0 pt-4">
+      <div class="container is-fluid">
+        <div class="topbar-grid">
+        <!-- Left: Logo + Divider + Title -->
+        <div class="topbar-left">
+          <nuxt-link to="/" class="navbar-logo">
+            <Logo width="160px" :animated="true" class="light-only" />
+            <Logo width="160px" :white="true" :animated="true" class="dark-only" />
+          </nuxt-link>
+          <div class="vertical-divider mx-4"></div>
+          <h2 class="title is-3 mb-0">{{ title }}</h2>
+        </div>
 
-            <!-- Center: Navigation Tabs -->
-            <div class="navbar-tabs">
-              <nuxt-link 
-                to="/" 
-                class="navbar-tab"
-                :class="{ 'is-active': $route.path === '/' || $route.path.startsWith('/jobs') }"
-              >
-                Jobs
-              </nuxt-link>
-              <nuxt-link 
-                to="/markets" 
-                class="navbar-tab"
-                :class="{ 'is-active': $route.path.startsWith('/markets') }"
-              >
-                GPUs
-              </nuxt-link>
-            </div>
-
-            <!-- Right: Actions -->
-            <div class="navbar-actions">
-              <!-- Status Link -->
-              <a 
-                href="https://nosana.statuspage.io" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                class="status-link"
-              >
-                <div class="status-dot"></div>
-                <span>Status</span>
-              </a>
-
-              <!-- Dark Mode Toggle -->
-              <button 
-                class="theme-toggle"
-                @click="toggleDarkMode"
-                :title="$colorMode.value === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path v-if="$colorMode.value === 'dark'" fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" fill="currentColor"/>
-                  <path v-else d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" fill="currentColor"/>
-                </svg>
-              </button>
-
-              <!-- Mobile Menu Toggle -->
-              <button 
-                class="mobile-menu-toggle is-hidden-tablet"
-                @click="showMobileMenu = !showMobileMenu"
-                :class="{ 'is-active': showMobileMenu }"
-              >
-                <span></span>
-                <span></span>
-                <span></span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Mobile Menu -->
-          <div class="mobile-menu is-hidden-tablet" :class="{ 'is-active': showMobileMenu }">
+        <!-- Center: Navigation Tabs -->
+        <div class="topbar-center is-hidden-mobile">
+          <div class="navbar-tabs">
             <nuxt-link 
               to="/" 
-              class="mobile-menu-item"
+              class="navbar-tab"
               :class="{ 'is-active': $route.path === '/' || $route.path.startsWith('/jobs') }"
-              @click="showMobileMenu = false"
             >
               Jobs
             </nuxt-link>
             <nuxt-link 
+              to="/hosts" 
+              class="navbar-tab"
+              :class="{ 'is-active': $route.path.startsWith('/hosts') }"
+            >
+              Hosts
+            </nuxt-link>
+            <nuxt-link 
               to="/markets" 
-              class="mobile-menu-item"
+              class="navbar-tab"
               :class="{ 'is-active': $route.path.startsWith('/markets') }"
-              @click="showMobileMenu = false"
             >
               GPUs
             </nuxt-link>
-            <a 
-              href="https://nosana.statuspage.io" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="mobile-menu-item"
-              @click="showMobileMenu = false"
-            >
-              <div class="status-dot"></div>
-              Status
-            </a>
           </div>
         </div>
+
+        <!-- Right: Actions -->
+        <div class="topbar-right">
+          <!-- Status Link -->
+          <a 
+            href="https://nosana.statuspage.io" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="status-link is-hidden-mobile"
+          >
+            <div class="status-dot"></div>
+            <span>Status</span>
+          </a>
+
+          <!-- Dark Mode Toggle -->
+          <button 
+            class="theme-toggle"
+            @click="toggleDarkMode"
+            :title="$colorMode.value === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+          >
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <path v-if="$colorMode.value === 'dark'" fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" fill="currentColor"/>
+              <path v-else d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" fill="currentColor"/>
+            </svg>
+          </button>
+
+          <!-- Mobile Menu Toggle -->
+          <button 
+            class="mobile-menu-toggle is-hidden-tablet"
+            @click="showMobileMenu = !showMobileMenu"
+            :class="{ 'is-active': showMobileMenu }"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div class="mobile-menu is-hidden-tablet" :class="{ 'is-active': showMobileMenu }">
+        <nuxt-link 
+          to="/" 
+          class="mobile-menu-item"
+          :class="{ 'is-active': $route.path === '/' || $route.path.startsWith('/jobs') }"
+          @click="showMobileMenu = false"
+        >
+          Jobs
+        </nuxt-link>
+        <nuxt-link 
+          to="/hosts" 
+          class="mobile-menu-item"
+          :class="{ 'is-active': $route.path.startsWith('/hosts') }"
+          @click="showMobileMenu = false"
+        >
+          Hosts
+        </nuxt-link>
+        <nuxt-link 
+          to="/markets" 
+          class="mobile-menu-item"
+          :class="{ 'is-active': $route.path.startsWith('/markets') }"
+          @click="showMobileMenu = false"
+        >
+          GPUs
+        </nuxt-link>
+        <a 
+          href="https://nosana.statuspage.io" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="mobile-menu-item"
+          @click="showMobileMenu = false"
+        >
+          <div class="status-dot"></div>
+          Status
+        </a>
+      </div>
       </div>
     </div>
-  </nav>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -117,24 +132,15 @@ defineProps({
 });
 
 const showMobileMenu = ref(false);
+const colorMode = useColorMode();
 
 const toggleDarkMode = () => {
-  const colorMode = useColorMode();
-  colorMode.value = colorMode.value === 'dark' ? 'light' : 'dark';
+  colorMode.preference = colorMode.preference === 'dark' ? 'light' : 'dark';
 };
 </script>
 
 <style scoped lang="scss">
 @use "sass:color";
-
-.explorer-navbar {
-  background: $white;
-  border-bottom: 1px solid $grey-lighter;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
 
 .navbar-container {
   max-width: 1600px;
@@ -142,18 +148,31 @@ const toggleDarkMode = () => {
   width: 100%;
 }
 
-.navbar-content {
-  display: flex;
+.topbar-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  min-height: 64px;
-  gap: 2rem;
+  gap: 1rem;
+  min-height: 60px;
 }
 
-.navbar-brand {
-  flex-shrink: 0;
+.topbar-left {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+}
+
+.topbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 .vertical-divider {
@@ -172,8 +191,6 @@ const toggleDarkMode = () => {
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  flex: 1;
-  justify-content: center;
 }
 
 .navbar-tab {
@@ -194,13 +211,6 @@ const toggleDarkMode = () => {
     color: $primary;
     background: rgba($primary, 0.08);
   }
-}
-
-.navbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-shrink: 0;
 }
 
 .status-link {
@@ -229,21 +239,20 @@ const toggleDarkMode = () => {
 }
 
 .theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: $grey;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
+  color: #6b7280;
   
   &:hover {
-    background: $grey-lightest;
-    color: $text;
+    background-color: #f3f4f6;
+    color: #374151;
   }
 }
 
@@ -284,14 +293,14 @@ const toggleDarkMode = () => {
 }
 
 .mobile-menu {
+  width: 100%;
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease;
-  border-top: 1px solid $grey-lighter;
+  margin-top: 1rem;
   
   &.is-active {
     max-height: 300px;
-    padding: 1rem 0;
   }
 }
 
@@ -305,6 +314,8 @@ const toggleDarkMode = () => {
   font-size: 0.95rem;
   font-weight: 500;
   transition: background 0.2s ease;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
   
   &:hover {
     background: $grey-lightest;
@@ -316,28 +327,35 @@ const toggleDarkMode = () => {
   }
 }
 
-// Hide navbar components on mobile
+// Tablet and below - adjust grid layout
 @media screen and (max-width: 1023px) {
-  .navbar-tabs {
+  .topbar-grid {
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+  }
+  
+  .topbar-center {
     display: none;
   }
   
-  .status-link {
-    display: none;
+  .topbar-left {
+    grid-column: 1;
   }
+  
+  .topbar-right {
+    grid-column: 2;
+  }
+}
 
+// Mobile - hide title and divider
+@media screen and (max-width: 768px) {
   .vertical-divider, .title {
     display: none;
   }
 }
 
 // Dark mode styles
-html.dark-mode {
-  .explorer-navbar {
-    background: $black-ter;
-    border-bottom-color: $grey-dark;
-  }
-
+.dark-mode {
   .vertical-divider {
     background-color: $grey-darker;
   }
@@ -351,7 +369,7 @@ html.dark-mode {
     }
     
     &.is-active {
-      color: $primary;
+      color: $white;
       background: rgba($primary, 0.15);
     }
   }
@@ -365,16 +383,12 @@ html.dark-mode {
   }
   
   .theme-toggle {
-    color: $grey-light;
+    color: #9ca3af;
     
     &:hover {
-      background: rgba($white, 0.05);
-      color: $white;
+      background-color: #374151;
+      color: #d1d5db;
     }
-  }
-  
-  .mobile-menu {
-    border-top-color: $grey-dark;
   }
   
   .mobile-menu-item {
@@ -385,7 +399,7 @@ html.dark-mode {
     }
     
     &.is-active {
-      color: $primary;
+      color: $white;
       background: rgba($primary, 0.15);
     }
   }
@@ -403,7 +417,7 @@ html.dark-mode {
   display: none;
 }
 
-html.dark-mode {
+.dark-mode {
   .light-only {
     display: none;
   }

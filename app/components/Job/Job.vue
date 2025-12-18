@@ -63,7 +63,7 @@
                   <td>Node</td>
                   <td>
                     <span v-if="props.job.node && props.job.node !== '11111111111111111111111111111111'">
-                      <nuxt-link :to="`/host/${props.job.node}`" class="has-text-link is-family-monospace">
+                      <nuxt-link :to="`/hosts/${props.job.node}`" class="has-text-link is-family-monospace">
                         {{ props.job.node }}
                       </nuxt-link>
                     </span>

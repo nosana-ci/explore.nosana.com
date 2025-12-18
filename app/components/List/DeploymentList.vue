@@ -211,7 +211,7 @@ const { data: testgridMarkets, pending: loadingTestgridMarkets } = await useAPI(
 
 const timestamp = useTimestamp({ interval: 1000 });
 const route = useRoute();
-const isHostPage = computed(() => route.path.startsWith('/host/'));
+const isHostPage = computed(() => route.path.startsWith('/hosts/'));
 const props = defineProps({
   jobs: {
     type: Array as PropType<Array<ExtendedJob>>,

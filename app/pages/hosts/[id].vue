@@ -1,9 +1,5 @@
 <template>
-  <div class="pt-6">
-    <div class="mb-5">
-      <h2 class="title">Host Page</h2>
-      <h3 class="subtitle mb-2">Details about this Nosana Host</h3>
-    </div>
+  <div class="pt-3">
   <div class="box">
     <!-- Quick Details Compact Grid -->
     <div class="content mb-5">
@@ -222,3 +218,4 @@ html.dark-mode {
   }
 }
 </style>
+

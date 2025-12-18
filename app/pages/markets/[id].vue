@@ -117,7 +117,7 @@
                       <div class="p-3">
                         <ol class="ml-4">
                           <li v-for="node in allNodes" :key="String(node)">
-                            <nuxt-link :to="`/host/${node}`" class="is-family-monospace">
+                            <nuxt-link :to="`/hosts/${node}`" class="is-family-monospace">
                               {{ node }}
                             </nuxt-link>
                           </li>
@@ -150,7 +150,7 @@
                       <div class="p-3">
                         <ol class="ml-4">
                           <li v-for="node in runningNodes" :key="String(node)">
-                            <nuxt-link :to="`/host/${node}`" class="is-family-monospace">
+                            <nuxt-link :to="`/hosts/${node}`" class="is-family-monospace">
                               {{ node }}
                             </nuxt-link>
                           </li>
@@ -192,7 +192,7 @@
                       <div class="p-3">
                         <ol class="ml-4">
                           <li v-for="node in queuedNodes" :key="String(node)">
-                            <nuxt-link :to="`/host/${node}`" class="is-family-monospace">
+                            <nuxt-link :to="`/hosts/${node}`" class="is-family-monospace">
                               {{ node }}
                             </nuxt-link>
                           </li>
@@ -226,7 +226,7 @@
                       <div class="p-3">
                         <ol class="ml-4">
                           <li v-for="node in availableNodesWithAccess" :key="String(node)">
-                            <nuxt-link :to="`/host/${node}`" class="is-family-monospace">
+                            <nuxt-link :to="`/hosts/${node}`" class="is-family-monospace">
                               {{ node }}
                             </nuxt-link>
                           </li>
