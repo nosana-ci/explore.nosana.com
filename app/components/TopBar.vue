@@ -4,12 +4,14 @@
       <div class="section py-0">
         <div class="container is-fluid">
           <div class="navbar-content">
-            <!-- Left: Logo -->
+            <!-- Left: Logo + Divider + Title -->
             <div class="navbar-brand">
               <nuxt-link to="/" class="navbar-logo">
-                <Logo width="140px" :animated="true" class="light-only" />
-                <Logo width="140px" :white="true" :animated="true" class="dark-only" />
+                <Logo width="160px" :animated="true" class="light-only" />
+                <Logo width="160px" :white="true" :animated="true" class="dark-only" />
               </nuxt-link>
+              <div class="vertical-divider mx-4"></div>
+              <h2 class="title is-3 mb-0">{{ title }}</h2>
             </div>
 
             <!-- Center: Navigation Tabs -->
@@ -24,7 +26,7 @@
               <nuxt-link 
                 to="/markets" 
                 class="navbar-tab"
-                :class="{ 'is-active': $route.path.startsWith('/markets') || $route.path.startsWith('/host') }"
+                :class="{ 'is-active': $route.path.startsWith('/markets') }"
               >
                 GPUs
               </nuxt-link>
@@ -81,7 +83,7 @@
             <nuxt-link 
               to="/markets" 
               class="mobile-menu-item"
-              :class="{ 'is-active': $route.path.startsWith('/markets') || $route.path.startsWith('/host') }"
+              :class="{ 'is-active': $route.path.startsWith('/markets') }"
               @click="showMobileMenu = false"
             >
               GPUs
@@ -107,6 +109,13 @@
 import { ref } from 'vue';
 import Logo from './Logo.vue';
 
+defineProps({
+  title: {
+    type: String,
+    required: true,
+  }
+});
+
 const showMobileMenu = ref(false);
 
 const toggleDarkMode = () => {
@@ -116,6 +125,8 @@ const toggleDarkMode = () => {
 </script>
 
 <style scoped lang="scss">
+@use "sass:color";
+
 .explorer-navbar {
   background: $white;
   border-bottom: 1px solid $grey-lighter;
@@ -143,6 +154,13 @@ const toggleDarkMode = () => {
   flex-shrink: 0;
   display: flex;
   align-items: center;
+}
+
+.vertical-divider {
+  width: 1px;
+  height: 2rem;
+  background-color: $grey;
+  flex-shrink: 0;
 }
 
 .navbar-logo {
@@ -298,13 +316,17 @@ const toggleDarkMode = () => {
   }
 }
 
-// Hide navbar tabs on mobile
-@media screen and (max-width: 768px) {
+// Hide navbar components on mobile
+@media screen and (max-width: 1023px) {
   .navbar-tabs {
     display: none;
   }
   
   .status-link {
+    display: none;
+  }
+
+  .vertical-divider, .title {
     display: none;
   }
 }
@@ -314,6 +336,10 @@ html.dark-mode {
   .explorer-navbar {
     background: $black-ter;
     border-bottom-color: $grey-dark;
+  }
+
+  .vertical-divider {
+    background-color: $grey-darker;
   }
   
   .navbar-tab {

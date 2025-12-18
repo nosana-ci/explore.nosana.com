@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <top-bar />
+    <top-bar :title="pageTitle" />
     <div id="content" class="is-flex is-flex-direction-column">
       <div class="section">
         <div class="container is-fluid">
@@ -13,7 +13,15 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
+
+// Map routes to titles
+const pageTitle = computed(() => {
+  return 'Explorer';
+});
 </script>
 
 <style lang="scss" scoped>

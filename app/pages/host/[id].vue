@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="pt-6">
     <div class="mb-5">
       <h2 class="title">Host Page</h2>
       <h3 class="subtitle mb-2">Details about this Nosana Host</h3>
