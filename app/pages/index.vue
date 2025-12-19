@@ -5,22 +5,16 @@
     </div>
     <JobStats />
     <JobTimestamps />
-    <div class="columns mt-4 is-multiline">
-      <div class="column is-6">
-        <div class="box is-flex is-flex-direction-column">
+    <div class="columns mt-4 is-multiline is-flex-direction-row" style="align-items: stretch;">
+      <div class="column is-6 is-flex">
+        <div class="box is-flex is-flex-direction-column" style="width: 100%;">
           <JobLatest />
         </div>
       </div>
-      <div class="column is-6">
-        <div class="box is-flex is-flex-direction-column">
-          <h2 class="title is-5">Hosts</h2>
+      <div class="column is-6 is-flex">
+        <div class="box is-flex is-flex-direction-column" style="width: 100%;">
+          <h2 class="title is-5">Queued Jobs</h2>
           <MarketQueues></MarketQueues>
-          <div class="has-text-right mt-auto pt-2">
-            <nuxt-link to="/jobs" class="button is-text">
-              <span>All Jobs</span>
-              <span class="icon"> &#8250; </span>
-            </nuxt-link>
-          </div>
         </div>
       </div>
     </div>

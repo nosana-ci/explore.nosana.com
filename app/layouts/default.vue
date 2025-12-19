@@ -20,7 +20,7 @@ const route = useRoute();
 
 // Map routes to titles
 const pageTitle = computed(() => {
-  return 'Explorer';
+  return 'Explore';
 });
 </script>
 

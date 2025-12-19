@@ -35,7 +35,7 @@
               class="navbar-tab"
               :class="{ 'is-active': $route.path.startsWith('/markets') }"
             >
-              GPUs
+              Markets
             </nuxt-link>
           </div>
         </div>
@@ -217,7 +217,7 @@ const toggleDarkMode = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 1.25rem;
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -242,8 +242,8 @@ const toggleDarkMode = () => {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 6px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;

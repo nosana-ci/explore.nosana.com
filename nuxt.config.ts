@@ -6,6 +6,17 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: false,
+  app: {
+    head: {
+      title: 'Nosana Explore',
+      htmlAttrs: {
+        lang: 'en',
+      },
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      ],
+    },
+  },
   css: [
     "~/assets/styles/global.scss",
     "@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css",

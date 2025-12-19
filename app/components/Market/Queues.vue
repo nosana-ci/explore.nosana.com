@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div style="height: 400px">
+    <div style="height: 355px">
       <Bar :options="barOptions" :data="queueData" style="width: 100%" />
     </div>
     <div class="table-container">
