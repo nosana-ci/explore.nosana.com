@@ -1,6 +1,5 @@
 <template>
   <div class="error-container">
-    <logo width="300px" :animated="false" class="mb-6" />
     <template v-if="error.statusCode === 404">
       <h1 class="error-title">404</h1>
       <p class="error-message">Oops! Page not found</p>

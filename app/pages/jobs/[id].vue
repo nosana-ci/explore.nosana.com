@@ -2,7 +2,7 @@
   <div>
     <Loader v-if="loading" />
     <div v-else-if="!job" class="box">
-      <div class="notification is-danger">
+      <div class="notification">
         <p>Job not found</p>
       </div>
     </div>
