@@ -148,7 +148,7 @@ const isDarkMode = computed(() =>
   top: 0;
   left: 280px;
   width: calc(100vw - 280px);
-  height: 100vh;
+  height: (calc(100vh - 150px));
   overflow: hidden;
   background: transparent;
 

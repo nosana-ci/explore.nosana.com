@@ -7,8 +7,8 @@
           <slot />
         </div>
       </div>
-      <site-footer class="mt-auto" />
     </div>
+    <site-footer class="mt-6" />
   </div>
 </template>
 
@@ -26,14 +26,14 @@ const pageTitle = computed(() => {
 
 <style lang="scss" scoped>
 #app {
-  min-height: 100vh;
+  min-height: (calc(100vh - 150px));
   display: flex;
   flex-direction: column;
 }
 
 #content {
   flex: 1;
-  min-height: calc(100vh - 64px);
+  min-height: (calc(100vh - 150px));
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;
