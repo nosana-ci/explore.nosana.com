@@ -80,7 +80,7 @@
                 </tr>
                 <tr v-if="!(props.hideFields?.price)">
                   <td>Price</td>
-                  <td v-html="formatPrice(totalCostUsd || 0, props.nosPrice)"></td>
+                  <td v-html="formatPrice(hostFeeNos || 0, networkFeeNos || 0, hostFeeUsd || 0, networkFeeUsd || 0)"></td>
                 </tr>
                 <tr v-if="gpuSummary">
                   <td>GPU</td>
@@ -437,6 +437,7 @@ const jobDataForPriceComponent = computed(() => {
     timeStart: props.job.timeStart,
     timeEnd: props.job.timeEnd,
     timeout: props.job.timeout,
+    price: props.job.price,
     market: typeof props.job.market === 'string' ? props.job.market : props.job.market?.toString(),
     state:
       props.job.state ??
@@ -450,7 +451,7 @@ const jobOptionsForPriceComponent = computed(() => {
 
 // Get accurate pricing using the same method as job list
 const marketsDataRef = computed(() => testgridMarkets.value);
-const { totalCostUsd } = useJobPricing(jobDataForPriceComponent, { showPerHour: false }, marketsDataRef);
+const { hostFeeNos, networkFeeNos, totalNos, hostFeeUsd, networkFeeUsd, totalCostUsd } = useJobPricing(jobDataForPriceComponent, { showPerHour: false }, marketsDataRef);
 
 // Duration data for SecondsFormatter
 const jobDurationData = ref<{ actualSeconds: number; maxDurationHours?: string } | null>(null);
@@ -481,11 +482,13 @@ const formatDateRelative = (timestamp: number) => {
 };
 
 // Helper function to format price
-const formatPrice = (usdPrice: number, nosPrice: number) => {
-  if (!usdPrice || usdPrice <= 0) return '--';
-  if (!nosPrice) return `USD: $${usdPrice.toFixed(4)}`;
-  const totalNos = (usdPrice / nosPrice).toFixed(4);
-  return `NOS: ${totalNos} <br> USD: $${usdPrice.toFixed(4)}`;
+const formatPrice = (hostNos: number, networkNos: number, hostUsd: number, networkUsd: number) => {
+  if (!hostNos || hostNos <= 0) return '--';
+  const hostNosDisplay = hostNos.toFixed(3);
+  const networkNosDisplay = networkNos.toFixed(3);
+  const hostUsdDisplay = hostUsd > 0 ? hostUsd.toFixed(3) : '--';
+  const networkUsdDisplay = networkUsd > 0 ? networkUsd.toFixed(3) : '--';
+  return `NOS: ${hostNosDisplay} (+${networkNosDisplay} fee)<br>USD: $${hostUsdDisplay} (+${networkUsdDisplay} fee)`;
 };
 
 watch(
