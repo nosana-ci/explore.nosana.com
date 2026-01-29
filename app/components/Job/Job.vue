@@ -80,7 +80,7 @@
                 </tr>
                 <tr v-if="!(props.hideFields?.price)">
                   <td>Price</td>
-                  <td v-html="formatPrice(props.job.price, props.nosPrice)"></td>
+                  <td v-html="formatPrice(totalCostUsd || 0, props.nosPrice)"></td>
                 </tr>
                 <tr v-if="gpuSummary">
                   <td>GPU</td>
@@ -161,6 +161,7 @@ import StatusTag from "~/components/Common/StatusTag.vue";
 import { useTemplates } from "~/composables/useTemplates";
 import { useToast } from "vue-toastification";
 import { useAPI } from "~/composables/useAPI";
+import { useJobPricing } from "~/composables/useMarketPricing";
 
 // Import icons as components
 import ChevronDownIcon from '@/assets/img/icons/chevron-down.svg?component';
@@ -447,6 +448,10 @@ const jobOptionsForPriceComponent = computed(() => {
   return { showPerHour: !props.job.isCompleted };
 });
 
+// Get accurate pricing using the same method as job list
+const marketsDataRef = computed(() => testgridMarkets.value);
+const { totalCostUsd } = useJobPricing(jobDataForPriceComponent, { showPerHour: false }, marketsDataRef);
+
 // Duration data for SecondsFormatter
 const jobDurationData = ref<{ actualSeconds: number; maxDurationHours?: string } | null>(null);
 
@@ -476,13 +481,11 @@ const formatDateRelative = (timestamp: number) => {
 };
 
 // Helper function to format price
-const formatPrice = (price: number, nosPrice: number) => {
-  const timeout = props.job?.timeout ?? 0;
-  if (!price || !timeout) return '--';
-  const totalNos = (price * timeout) / 1e6;
-  if (!nosPrice) return `NOS: ${totalNos.toFixed(4)}`;
-  const usdPrice = (totalNos * nosPrice).toFixed(4);
-  return `NOS: ${totalNos.toFixed(4)} <br> USD: $${usdPrice}`;
+const formatPrice = (usdPrice: number, nosPrice: number) => {
+  if (!usdPrice || usdPrice <= 0) return '--';
+  if (!nosPrice) return `USD: $${usdPrice.toFixed(4)}`;
+  const totalNos = (usdPrice / nosPrice).toFixed(4);
+  return `NOS: ${totalNos} <br> USD: $${usdPrice.toFixed(4)}`;
 };
 
 watch(
