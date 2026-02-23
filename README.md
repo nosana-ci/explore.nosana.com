@@ -1,6 +1,6 @@
 # Nosana explorer
 
-Nuxt 4 site for the [Nosana Explorer](https://explorer.nosana.com).
+Nuxt 4 site for the [Nosana Explorer](https://explore.nosana.com).
 
 ## Build Setup
 
