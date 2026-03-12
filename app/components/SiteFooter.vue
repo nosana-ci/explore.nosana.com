@@ -12,7 +12,6 @@
       <span class="has-text-grey">|</span>
       <a
         href="https://explore.nosana.com/"
-        target="_blank"
         class="has-text-black has-text-weight-bold"
         >Explore</a
       >
