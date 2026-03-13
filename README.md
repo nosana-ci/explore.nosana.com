@@ -1,4 +1,4 @@
-# Nosana explorer
+# Nosana Explore
 
 Nuxt 4 site for the [Nosana Explorer](https://explore.nosana.com).
 

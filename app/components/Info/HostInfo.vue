@@ -6,7 +6,7 @@
       <span class="quick-detail-value">
         <span v-if="!isNode">
           <span v-if="loadingJobs || loadingSpecs || loadingMarkets || loadingRuns">...</span>
-          <span v-else>Not a node</span>
+          <span v-else>Not a host</span>
         </span>
         <span v-else-if="!queueInfo">
           <span v-if="loadingMarkets || loadingRuns">...</span>

@@ -29,7 +29,7 @@
         {{ error }}
       </div>
       <div v-else-if="!templateData || templateData.templates.length === 0" class="notification is-info">
-        No benchmark data available for this node.
+        No benchmark data available for this host.
       </div>
       <Bar
         v-else
