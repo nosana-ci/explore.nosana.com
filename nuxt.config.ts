@@ -83,6 +83,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
+      maintenance: process.env.NUXT_PUBLIC_MAINTENANCE === "true",
       rpcUrl: process.env.RPC_URL,
       apiBase: process.env.API_BASE,
       oldApiBase: process.env.OLD_API_BASE || "https://backend.k8s.prd.nos.ci",
