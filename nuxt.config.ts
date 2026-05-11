@@ -84,12 +84,12 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       maintenance: process.env.NUXT_PUBLIC_MAINTENANCE === "true",
-      rpcUrl: process.env.RPC_URL,
-      apiBase: process.env.API_BASE,
-      oldApiBase: process.env.OLD_API_BASE || "https://backend.k8s.prd.nos.ci",
-      network: process.env.NETWORK || "mainnet",
-      nodeDomain: process.env.NODE_DOMAIN,
-      frpServer: process.env.FRP_SERVER || "node.k8s.prd.nos.ci",
+      rpcUrl: process.env.NUXT_PUBLIC_RPC_URL || process.env.RPC_URL,
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || process.env.API_BASE,
+      oldApiBase: process.env.NUXT_PUBLIC_OLD_API_BASE || process.env.OLD_API_BASE || "https://backend.k8s.prd.nos.ci",
+      network: process.env.NUXT_PUBLIC_NETWORK || process.env.NETWORK || "mainnet",
+      nodeDomain: process.env.NUXT_PUBLIC_NODE_DOMAIN || process.env.NODE_DOMAIN,
+      frpServer: process.env.NUXT_PUBLIC_FRP_SERVER || process.env.FRP_SERVER || "node.k8s.prd.nos.ci",
     },
   },
   gtag: {

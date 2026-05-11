@@ -9,12 +9,6 @@
         <!-- Host Info -->
         <HostInfo
           :address="address"
-          :node-specs="nodeSpecs"
-          :node-info="nodeInfo"
-          :node-ranking="nodeRanking"
-          :loading-node-specs="loadingSpecs"
-          :loading-node-info="loadingNodeInfo"
-          :loading-node-ranking="loadingNodeRanking"
         />
       </div>
     </div>
@@ -56,7 +50,7 @@ const address: Ref<string> = ref(params.id as string);
 
 // Node Specs & Benchmark Market ID
 const { data: nodeSpecs, pending: loadingSpecs } = useAPI(
-  `/api/nodes/${address.value}/specs`,
+  `/api/nodes/${address.value}/metrics`,
   {
     // @ts-ignore
     // disableToastOnError: true, // This option is not standard, remove or use supported ones
@@ -76,23 +70,6 @@ const { data: nodeInfo, pending: loadingNodeInfo } = useAPI(
     onResponseError: () => ({ info: null }),
     default: () => null,
     watch: [nodeInfoUrl]
-  }
-);
-
-// Fetch Node Ranking
-interface NodeRanking {
-  node: string;
-  participationRate: number;
-  uptimePercentage: number;
-}
-const { data: nodeRanking, pending: loadingNodeRanking } = useAPI(
-  () =>
-    address.value
-      ? `/api/benchmarks/node-report?node=${address.value}`
-      : '',
-  {
-    default: () => null,
-    watch: [address]
   }
 );
 
