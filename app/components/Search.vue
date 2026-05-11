@@ -74,7 +74,7 @@ const selectItem = async (item: { type: string; value: string }) => {
 
     if (!isJob) {
       try {
-        const { data: node } = await useAPI(`/api/nodes/${item.value}/specs`, {
+        const { data: node } = await useAPI(`/api/nodes/${item.value}/metrics`, {
           // @ts-ignore TODO: add to useAPI opts type
           disableToastOnError: true,
         });

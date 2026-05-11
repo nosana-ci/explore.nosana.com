@@ -143,55 +143,13 @@
     </div>
   </div>
 
-  <!-- Availability -->
-  <div class="column is-one-fifth is-full-mobile no-padding" style="min-width: 220px; margin-bottom: 0.75rem;">
-    <div class="quick-detail-item">
-      <span class="quick-detail-label">
-        <span class="is-flex-inline">
-          <span>Availability</span>
-          <span
-            class="has-tooltip-arrow ml-1"
-            style="vertical-align: middle"
-            data-tooltip="The percentage of time this host has been available to process deployments while in queue"
-          >
-            <InfoIcon />
-          </span>
-        </span>
-      </span>
-      <span class="quick-detail-value">
-        <span v-if="loadingRanking || loadingSpecs">...</span>
-        <span v-else-if="!nodeSpecs?.marketAddress">-</span>
-        <span v-else-if="!nodeRanking || typeof nodeRanking.uptimePercentage === 'undefined'">
-          <span
-            class="has-tooltip-arrow"
-            data-tooltip="This host hasn't been online long enough to calculate availibily"
-          >
-            unknown
-          </span>
-        </span>
-        <span v-else>{{ nodeRanking.uptimePercentage.toFixed(1) }}%</span>
-      </span>
-    </div>
-  </div>
-
-  <!-- Anti-spoof percentage -->
-  <div class="column is-one-fifth is-full-mobile no-padding" style="min-width: 220px; margin-bottom: 0.75rem;">
-    <div class="quick-detail-item">
-      <span class="quick-detail-label">Anti-spoof percentage</span>
-      <span class="quick-detail-value">
-        <span v-if="nodeRanking && nodeRanking.participationRate">{{ nodeRanking.participationRate.toFixed(1) }}%</span>
-        <span v-else>-</span>
-      </span>
-    </div>
-  </div>
-
   <!-- CLI Version -->
   <div class="column is-one-fifth is-full-mobile no-padding" style="min-width: 220px; margin-bottom: 0.75rem;">
     <div class="quick-detail-item">
       <span class="quick-detail-label">CLI Version</span>
       <span class="quick-detail-value">
-        <span v-if="combinedSpecs && combinedSpecs.nodeVersion">
-          v{{ combinedSpecs.nodeVersion }}
+        <span v-if="cliVersion">
+          v{{ cliVersion }}
         </span>
         <span v-else-if="loadingInfo || loadingSpecs">...</span>
         <span v-else>Offline</span>
@@ -199,11 +157,10 @@
     </div>
   </div>
 
-  <!-- Host Specifications -->
-  <HostSpecifications
-    v-if="combinedSpecs"
-    :specs="combinedSpecs"
-    :node-ranking="nodeRanking"
+  <AdaptiveMetricsGrid
+    v-if="hasMetricSources"
+    :sources="metricSources"
+    :fields="metricFields"
   />
 </template>
 
@@ -211,28 +168,15 @@
 import { type Market } from "@nosana/sdk";
 import JobStatus from "~/components/Job/Status.vue";
 import InfoIcon from '@/assets/img/icons/info.svg?component';
-import HostSpecifications from "~/components/Info/HostSpecifications.vue";
+import AdaptiveMetricsGrid from "~/components/UI/AdaptiveMetricsGrid.vue";
+import type { MetricField } from "~/components/UI/AdaptiveMetricsGrid.vue";
 const { nosana } = useSDK();
-const { data: testgridMarkets, pending: loadingTestgridMarkets } =
+const { data: testgridMarkets } =
   useAPI("/api/markets");
 
 const props = defineProps<{
   address: string;
-  nodeSpecs?: any; 
-  nodeInfo?: any;  
-  nodeRanking?: any; 
-  loadingNodeSpecs?: boolean;
-  loadingNodeInfo?: boolean;
-  loadingNodeRanking?: boolean;
 }>();
-
-const getMarketNameFromList = (marketAddress: string): string => {
-  if (testgridMarkets.value && Array.isArray(testgridMarkets.value)) {
-    const market = testgridMarkets.value.find((tgm: any) => tgm.address === marketAddress);
-    return market?.name || marketAddress;
-  }
-  return marketAddress;
-};
 
 const { markets, getMarkets, loadingMarkets } = useMarkets();
 if (!markets.value) {
@@ -294,7 +238,7 @@ const hasRanJobs: ComputedRef<Boolean> = computed(() => {
  * Node Specification *
  **********************/
  const { data: nodeSpecs, pending: loadingSpecs } = useAPI(
-  `/api/nodes/${props.address}/specs`,
+  `/api/nodes/${props.address}/metrics`,
   {
     // @ts-ignore
     disableToastOnError: true,
@@ -306,7 +250,7 @@ const isNode: ComputedRef<Boolean> = computed(() => {
   return (
     (nodeRuns.value && nodeRuns.value.length) ||
     hasRanJobs.value ||
-    (props.nodeSpecs && props.nodeSpecs.marketAddress) ||
+    (nodeSpecs.value && nodeSpecs.value.marketAddress) ||
     queueInfo.value
   );
 });
@@ -334,55 +278,89 @@ const isNode: ComputedRef<Boolean> = computed(() => {
   }
 );
 
-/*************
- * Fallback Node Specs *
- *************/
-const combinedSpecs = computed(() => {
-  if (!nodeSpecs.value) return null;
-
-  const nodeInfoData = nodeInfo.value?.info;
-
-  // First check if node api data is available, otherwise use the database as fallback
-
-  return {
-    nodeAddress: props.address,
-    marketAddress: nodeSpecs.value.marketAddress,
-    ram: nodeInfoData?.ram_mb
-      ? Math.round(nodeInfoData.ram_mb)
-      : Math.round(Number(nodeSpecs.value.ram)),
-    diskSpace: nodeInfoData?.disk_gb
-      ? Math.round(Number(nodeInfoData.disk_gb))
-      : Math.round(Number(nodeSpecs.value.diskSpace)),
-    cpu: nodeInfoData?.cpu?.model ?? nodeSpecs.value.cpu,
-    country: nodeInfoData?.country ?? nodeSpecs.value.country,
-    download: nodeSpecs.value.avgDownload10,
-    upload: nodeSpecs.value.avgUpload10,
-    ping: nodeSpecs.value.avgPing10,
-    gpus: nodeInfoData?.gpus?.devices
-      ? nodeInfoData.gpus.devices.map((gpu: any) => ({
-          gpu: gpu.name,
-          memory: gpu.memory?.total_mb,
-          architecture: `${gpu.network_architecture?.major}.${gpu.network_architecture?.minor}`,
-        }))
-      : nodeSpecs.value.gpus,
-    cudaVersion:
-      nodeInfoData?.gpus?.cuda_driver_version ?? nodeSpecs.value.cudaVersion,
-    nvmlVersion:
-      nodeInfoData?.gpus?.nvml_driver_version ?? nodeSpecs.value.nvmlVersion,
-    nodeVersion: nodeInfoData?.version ?? nodeSpecs.value.nodeVersion,
-    systemEnvironment: nodeInfoData?.system_environment
-      ? nodeInfoData.system_environment.toLowerCase().includes("wsl")
-        ? "WSL"
-        : nodeInfoData.system_environment
-          ? "Linux"
-          : null
-      : nodeSpecs.value.systemEnvironment
-        ? nodeSpecs.value.systemEnvironment.toLowerCase().includes("wsl")
-          ? "WSL"
-          : "Linux"
-        : null,
-  };
+const cliVersion = computed(() => {
+  return nodeInfo.value?.info?.version ?? nodeSpecs.value?.metrics?.node_version ?? null;
 });
+
+const systemEnvironment = computed(() => {
+  const value = nodeInfo.value?.info?.system_environment ?? nodeSpecs.value?.metrics?.system_environment;
+  if (!value) return null;
+
+  return String(value).toLowerCase().includes("wsl") ? "WSL" : "Linux";
+});
+
+const hasMetricSources = computed(() => {
+  return Boolean(nodeInfo.value?.info || nodeSpecs.value?.metrics);
+});
+
+const metricFields: MetricField[] = [
+  {
+    key: "gpu",
+    label: "GPU",
+    paths: ["nodeInfo.info.gpus.devices.0.name", "metrics.gpu.devices.0.name"],
+  },
+  {
+    key: "nvidiaDriver",
+    label: "NVIDIA Driver",
+    paths: ["nodeInfo.info.gpus.nvml_driver_version", "metrics.gpu.nvml_driver_version", "metrics.nvml_version"],
+  },
+  {
+    key: "cudaVersion",
+    label: "CUDA Version",
+    paths: ["nodeInfo.info.gpus.cuda_driver_version", "metrics.gpu.runtime_version", "metrics.cuda_runtime_version"],
+  },
+  {
+    key: "cpu",
+    label: "CPU",
+    paths: ["nodeInfo.info.cpu.model", "metrics.cpu.cpu_model", "metrics.cpu_model"],
+  },
+  {
+    key: "ram",
+    label: "RAM",
+    paths: ["nodeInfo.info.ram_mb", "metrics.ram_gb", "metrics.ram_mb"],
+    transformPaths: {
+      "metrics.ram_gb": "gbToMb",
+    },
+    formatter: "mb",
+  },
+  {
+    key: "diskSpace",
+    label: "Disk Space",
+    paths: ["nodeInfo.info.disk_gb", "metrics.disk_gb"],
+    formatter: "gb",
+  },
+  {
+    key: "country",
+    label: "Country",
+    paths: ["nodeInfo.info.country", "metrics.network.country", "metrics.country"],
+    formatter: "country",
+  },
+  {
+    key: "systemEnvironment",
+    label: "System Environment",
+    paths: ["derived.systemEnvironment"],
+  },
+  {
+    key: "download",
+    label: "Download Speed",
+    paths: ["metrics.network.download_mbps", "metrics.download_mbps"],
+    formatter: "mbps",
+  },
+  {
+    key: "upload",
+    label: "Upload Speed",
+    paths: ["metrics.network.upload_mbps", "metrics.upload_mbps"],
+    formatter: "mbps",
+  },
+];
+
+const metricSources = computed(() => ({
+  nodeInfo: nodeInfo.value,
+  metrics: nodeSpecs.value?.metrics,
+  derived: {
+    systemEnvironment: systemEnvironment.value,
+  },
+}));
 
 
 /*********************
@@ -415,7 +393,7 @@ watch(isNode, (val) => {
 // Always attempt to fetch node ranking if we have an address
 const rankingUrl = computed(() =>
   props.address
-    ? `/api/benchmarks/node-report?node=${props.address}`
+    ? `/api/nodes/heartbeats/uptime/${props.address}`
     : ''
 );
 
@@ -428,71 +406,22 @@ const { data: rankingData, pending: loadingRanking } = useAPI(
 );
 
 interface NodeRanking {
-  node: string;
-  participationRate: number;
+  participationRate?: number;
   uptimePercentage: number;
 }
 
 const nodeRanking: ComputedRef<NodeRanking | null> = computed(() => {
-  if (rankingData?.value) {
-    if (rankingData.value.node === props.address) {
-      return {
-        ...rankingData.value,
-        participationRate: rankingData.value.antiSpoofSuccessRate || 0
-      };
-    }
+  const history = Array.isArray(rankingData?.value) ? rankingData.value : [];
+  const latest = history[history.length - 1];
+
+  if (latest && typeof latest.uptimePercentage === 'number') {
+    return {
+      uptimePercentage: latest.uptimePercentage,
+    };
   }
+
   return null;
 });
-
-const totalJobs = computed(() => {
-  return jobs.value?.totalJobs ?? undefined;
-});
-
-// Create a ref to store the market relation result.
-const marketRelationId = ref<string | null>(null);
-
-// Define a function to fetch the market relation
-async function fetchMarketRelation() {
-  if (
-    nodeSpecs.value?.status === "ONBOARDED" &&
-    nodeSpecs.value.marketAddress
-  ) {
-    try {
-      const { data } = await useAPI(
-        `/api/nodes/market-relation?market=${nodeSpecs.value.marketAddress}`,
-        {
-          // @ts-ignore
-          disableToastOnError: true,
-        }
-      );
-      if (data && data.value) {
-        marketRelationId.value = data.value;
-      } else {
-        marketRelationId.value = null;
-      }
-    } catch (err) {
-      // Silent error handling
-      marketRelationId.value = null;
-    }
-  }
-}
-
-watch(
-  nodeSpecs,
-  (newSpecs) => {
-    if (newSpecs && newSpecs.status === "ONBOARDED" && newSpecs.marketAddress) {
-      fetchMarketRelation();
-    }
-  },
-  { immediate: true }
-);
-
-const cliVersion = computed(() => {
-  if (!combinedSpecs.value && !nodeInfo.value?.info) return null;
-  return nodeInfo.value?.info?.version ?? combinedSpecs.value?.nodeVersion;
-});
-
 
 </script>
 
