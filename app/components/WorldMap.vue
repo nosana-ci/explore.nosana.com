@@ -251,12 +251,12 @@ interface NodeSeriesItem {
 // Prepare data for the map visualization
 const seriesData = computed(() => {
   if (
-    !nodeStatsResponse.value?.data ||
-    !Array.isArray(nodeStatsResponse.value.data)
+    !nodeStatsResponse.value ||
+    !Array.isArray(nodeStatsResponse.value)
   )
     return [];
 
-  return nodeStatsResponse.value.data
+  return nodeStatsResponse.value
     .filter(
       (item: NodeStatsItem) =>
         item.country &&

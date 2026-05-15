@@ -53,13 +53,13 @@ interface NodeStatsItem {
 // Calculate total active hosts
 const queuedHosts = computed(() => {
   if (
-    !nodeStatsResponse.value?.data ||
-    !Array.isArray(nodeStatsResponse.value.data)
+    !nodeStatsResponse.value ||
+    !Array.isArray(nodeStatsResponse.value)
   )
     return 0;
 
   let total = 0;
-  nodeStatsResponse.value.data.forEach((item: NodeStatsItem) => {
+  nodeStatsResponse.value.forEach((item: NodeStatsItem) => {
     if (item.active > 0) {
       total += item.active;
     }
@@ -70,13 +70,13 @@ const queuedHosts = computed(() => {
 
 const activeHosts = computed(() => {
   if (
-    !nodeStatsResponse.value?.data ||
-    !Array.isArray(nodeStatsResponse.value.data)
+    !nodeStatsResponse.value ||
+    !Array.isArray(nodeStatsResponse.value)
   )
     return 0;
 
   let total = 0;
-  nodeStatsResponse.value.data.forEach((item: NodeStatsItem) => {
+  nodeStatsResponse.value.forEach((item: NodeStatsItem) => {
     if (item.total > 0) {
       total += item.total;
     }
