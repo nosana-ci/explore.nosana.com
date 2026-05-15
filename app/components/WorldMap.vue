@@ -235,8 +235,7 @@ const isPointInPolygon = (
 // Define types for node statistics
 interface NodeStatsItem {
   country: string;
-  running: number;
-  queue: number;
+  active: number;
   offline: number;
   total: number;
 }
@@ -245,8 +244,7 @@ interface NodeSeriesItem {
   name: string;
   value: [number, number, number]; // [longitude, latitude, count]
   total: number;
-  running: number;
-  queue: number;
+  active: number;
   offline: number;
 }
 
@@ -265,7 +263,7 @@ const seriesData = computed(() => {
         typeof item.country === "string" &&
         item.country.length === 2 &&
         countries.isValid(item.country) &&
-        item.running + item.queue > 0 // Check if there are any active nodes (running + queue)
+        item.active > 0
     )
     .map((item: NodeStatsItem) => {
       const countryName = getEchartsCountryName(item.country);
@@ -274,10 +272,9 @@ const seriesData = computed(() => {
 
       return {
         name: countryName,
-        value: [...coords, item.running + item.queue], // Use sum of running and queue for visualization
+        value: [...coords, item.active],
         total: item.total,
-        running: item.running,
-        queue: item.queue,
+        active: item.active,
         offline: item.offline,
       } as NodeSeriesItem;
     })
@@ -298,11 +295,8 @@ const chartOptions = computed(() => {
           <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 4px;">
             <div style="display: flex; align-items: center;">
               <img src="${NosanaLogo}" width="18" height="18" style="filter: brightness(0) saturate(100%) invert(89%) sepia(11%) saturate(6356%) hue-rotate(55deg) brightness(97%) contrast(108%);" />
-              <span style="color: white; font-size: 20px; margin-left: 8px;">${data.running + data.queue}</span>
-              <span style="color: #888888; margin-left: 8px;">online hosts</span>
-            </div>
-            <div style="color: #10E80C; font-size: 14px;">
-              ${data.running} running • ${data.queue} available
+              <span style="color: white; font-size: 20px; margin-left: 8px;">${data.active}</span>
+              <span style="color: #888888; margin-left: 8px;">active hosts</span>
             </div>
           </div>
         </div>
