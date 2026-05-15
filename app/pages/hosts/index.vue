@@ -42,30 +42,15 @@ import Search from "~/components/Search.vue";
 const { data: nodeStatsResponse } = await useAPI("/api/stats/nodes-country");
 const loading = ref(false);
 
-// Get running nodes from jobs API
-const { data: runningNodesData } = useAPI("/api/jobs/running", {
-  transform: (data: any) => {
-    if (!data) return { total: 0 };
-    return {
-      total: Object.values(data).reduce(
-        (sum: number, market: any) => sum + (market.running || 0),
-        0
-      ),
-    };
-  },
-  default: () => ({ total: 0 }),
-});
-
 // Define interface for node stats item
 interface NodeStatsItem {
   country: string;
-  running: number;
-  queue: number;
+  active: number;
   offline: number;
   total: number;
 }
 
-// Calculate queued hosts
+// Calculate total active hosts
 const queuedHosts = computed(() => {
   if (
     !nodeStatsResponse.value?.data ||
@@ -74,22 +59,30 @@ const queuedHosts = computed(() => {
     return 0;
 
   let total = 0;
-  // Group by country and sum up queues
   nodeStatsResponse.value.data.forEach((item: NodeStatsItem) => {
-    if (item.queue > 0) {
-      total += item.queue;
+    if (item.active > 0) {
+      total += item.active;
     }
   });
 
-  // Use API's total if available, otherwise use our calculation
-  return nodeStatsResponse.value.totals?.totalQueued ?? total;
+  return total;
 });
 
-// Calculate active hosts using running nodes from jobs API
 const activeHosts = computed(() => {
-  const runningCount = runningNodesData.value?.total || 0;
-  const queuedCount = queuedHosts.value;
-  return runningCount + queuedCount;
+  if (
+    !nodeStatsResponse.value?.data ||
+    !Array.isArray(nodeStatsResponse.value.data)
+  )
+    return 0;
+
+  let total = 0;
+  nodeStatsResponse.value.data.forEach((item: NodeStatsItem) => {
+    if (item.total > 0) {
+      total += item.total;
+    }
+  });
+
+  return total;
 });
 </script>
 
