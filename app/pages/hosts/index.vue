@@ -42,6 +42,20 @@ import Search from "~/components/Search.vue";
 const { data: nodeStatsResponse } = await useAPI("/api/stats/nodes-country");
 const loading = ref(false);
 
+// Get running nodes from jobs API
+const { data: runningNodesData } = useAPI("/api/jobs/running", {
+  transform: (data: any) => {
+    if (!data) return { total: 0 };
+    return {
+      total: Object.values(data).reduce(
+        (sum: number, market: any) => sum + (market.running || 0),
+        0
+      ),
+    };
+  },
+  default: () => ({ total: 0 }),
+});
+
 // Define interface for node stats item
 interface NodeStatsItem {
   country: string;
@@ -82,7 +96,7 @@ const activeHosts = computed(() => {
     }
   });
 
-  return total;
+  return total + (runningNodesData.value?.total || 0);
 });
 </script>
 
