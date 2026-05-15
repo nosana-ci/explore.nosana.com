@@ -236,24 +236,29 @@ interface NodeInfoResponse {
   info?: NodeInfoData;
 }
 
-interface NodeSpecs {
+interface NodeMetricsResponse {
   marketAddress?: string;
-  ram?: string | number;
-  diskSpace?: string | number;
-  cpu?: string;
-  country?: string;
-  avgDownload10?: number;
-  avgUpload10?: number;
-  avgPing10?: number;
-  gpus?: Array<{
-    gpu?: string;
-    memory?: number;
-    architecture?: string;
-  }>;
-  cudaVersion?: string;
-  nvmlVersion?: string;
-  nodeVersion?: string;
-  systemEnvironment?: string;
+  metrics?: {
+    disk_gb?: number;
+    ram_gb?: number;
+    system_environment?: string;
+    network?: {
+      country?: string;
+      download_mbps?: number;
+      upload_mbps?: number;
+      ping_ms?: number;
+    };
+    cpu?: {
+      cpu_model?: string;
+    };
+    gpu?: {
+      cuda_driver_version?: string;
+      devices?: Array<{
+        name?: string;
+        vram_total_mb?: number;
+      }>;
+    };
+  };
 }
 
 interface CombinedSpecs {
@@ -403,9 +408,9 @@ const isGHCR = (image: string) => {
 
 // Get host specs for actual GPU info (skip when node is placeholder)
 const nodeSpecsUrl = computed(() =>
-  hasRealNode.value ? `/api/nodes/${props.job.node}/specs` : ''
+  hasRealNode.value ? `/api/nodes/${props.job.node}/metrics` : ''
 );
-const { data: nodeSpecs, pending: loadingNodeSpecs } = useAPI<NodeSpecs | null>(nodeSpecsUrl);
+const { data: nodeSpecs, pending: loadingNodeSpecs } = useAPI<NodeMetricsResponse | null>(nodeSpecsUrl);
 
 const nodeInfoUrl = computed(() =>
   hasRealNode.value
@@ -413,23 +418,6 @@ const nodeInfoUrl = computed(() =>
     : ''
 );
 const { data: nodeInfo } = useAPI<NodeInfoResponse | null>(nodeInfoUrl);
-
-// Get node report
-const jobNodeReportUrl = computed(() => {
-  if (!props.job.node || props.job.node.toString() === '11111111111111111111111111111111') return '';
-  return `/api/benchmarks/node-report?node=${props.job.node.toString()}`;
-});
-const { data: jobNodeReport, pending: loadingJobNodeReport } = useAPI(
-  jobNodeReportUrl,
-  {
-    default: () => null,
-    watch: [jobNodeReportUrl],
-  }
-);
-
-
-
-
 
 const jobDataForPriceComponent = computed(() => {
   return {
@@ -610,6 +598,9 @@ const combinedSpecs = computed<CombinedSpecs | null>(() => {
   if (!nodeSpecs.value) return null;
 
   const nodeInfoData = nodeInfo.value?.info;
+  const metrics = nodeSpecs.value.metrics;
+
+  if (!metrics) return null;
 
   const gpusArray = nodeInfoData?.gpus?.devices
     ? nodeInfoData.gpus.devices.map((gpu: GpuDevice) => ({
@@ -617,35 +608,65 @@ const combinedSpecs = computed<CombinedSpecs | null>(() => {
         memory: gpu.memory?.total_mb,
         architecture: `${gpu.network_architecture?.major}.${gpu.network_architecture?.minor}`,
       }))
-    : (nodeSpecs.value.gpus ?? []);
+    : ((metrics.gpu?.devices ?? []).map((gpu: any) => ({
+        gpu: gpu?.name ?? gpu?.gpu,
+        memory: gpu?.vram_total_mb ?? gpu?.vramMb ?? gpu?.memory,
+        architecture:
+          gpu?.network_architecture?.major !== undefined &&
+          gpu?.network_architecture?.minor !== undefined
+            ? `${gpu.network_architecture.major}.${gpu.network_architecture.minor}`
+            : gpu?.majorArchitecture !== undefined && gpu?.minorArchitecture !== undefined
+              ? `${gpu.majorArchitecture}.${gpu.minorArchitecture}`
+              : gpu?.architecture,
+      })));
 
   const firstGpu = gpusArray.length > 0 ? gpusArray[0] : undefined;
 
-  const cpuModel = nodeInfoData?.cpu?.model ?? nodeSpecs.value.cpu;
+  const cpuModel = nodeInfoData?.cpu?.model ?? metrics.cpu?.cpu_model ?? metrics.cpu_model ?? nodeSpecs.value.cpu;
+
+  const metricRamMb =
+    typeof metrics.ram_mb === "number"
+      ? metrics.ram_mb
+      : typeof metrics.ram_gb === "number"
+        ? metrics.ram_gb * 1024
+        : undefined;
+  const metricDiskGb = typeof metrics.disk_gb === "number" ? metrics.disk_gb : undefined;
+  const metricCountry = metrics.network?.country ?? metrics.country;
+  const metricDownload = metrics.network?.download_mbps ?? metrics.download_mbps ?? nodeSpecs.value.avgDownload10;
+  const metricUpload = metrics.network?.upload_mbps ?? metrics.upload_mbps ?? nodeSpecs.value.avgUpload10;
+  const metricPing = metrics.network?.ping_ms ?? metrics.ping_ms ?? nodeSpecs.value.avgPing10;
+  const metricCudaVersion =
+    nodeInfoData?.gpus?.cuda_driver_version ??
+    metrics.gpu?.cuda_driver_version ??
+    metrics.gpu?.runtime_version ??
+    metrics.cuda_driver_version ??
+    metrics.cuda_runtime_version ??
+    nodeSpecs.value.cudaVersion;
+  const metricSystemEnvironment =
+    nodeInfoData?.system_environment ?? metrics.system_environment ?? nodeSpecs.value.systemEnvironment;
 
   return {
     ram: nodeInfoData?.ram_mb
       ? Math.round(nodeInfoData.ram_mb)
-      : Math.round(Number(nodeSpecs.value.ram)),
+      : Math.round(Number(metricRamMb ?? nodeSpecs.value.ram)),
     diskSpace: nodeInfoData?.disk_gb
       ? Math.round(Number(nodeInfoData.disk_gb))
-      : Math.round(Number(nodeSpecs.value.diskSpace)),
+      : Math.round(Number(metricDiskGb ?? nodeSpecs.value.diskSpace)),
     cpu: cpuModel,
-    country: nodeInfoData?.country ?? nodeSpecs.value.country,
-    download: nodeSpecs.value.avgDownload10 ?? (jobNodeReport.value as any)?.avgDownload10,
-    upload: nodeSpecs.value.avgUpload10 ?? (jobNodeReport.value as any)?.avgUpload10,
-    ping: nodeSpecs.value.avgPing10 ?? (jobNodeReport.value as any)?.avgPing10,
+    country: nodeInfoData?.country ?? metricCountry ?? nodeSpecs.value.country,
+    download: metricDownload,
+    upload: metricUpload,
+    ping: metricPing,
     gpu: firstGpu?.gpu,
-    cudaVersion:
-      nodeInfoData?.gpus?.cuda_driver_version ?? nodeSpecs.value.cudaVersion,
+    cudaVersion: metricCudaVersion,
     systemEnvironment: nodeInfoData?.system_environment
       ? nodeInfoData.system_environment.toLowerCase().includes("wsl")
         ? "WSL"
         : nodeInfoData.system_environment
           ? "Linux"
           : null
-      : nodeSpecs.value.systemEnvironment
-        ? nodeSpecs.value.systemEnvironment.toLowerCase().includes("wsl")
+      : metricSystemEnvironment
+        ? String(metricSystemEnvironment).toLowerCase().includes("wsl")
           ? "WSL"
           : "Linux"
         : null,

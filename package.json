@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev --dotenv .env.local",
+    "dev": "nuxt dev --dotenv .env.local-backend",
     "generate": "nuxt generate --dotenv .env.${APP_ENV:=production}",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
