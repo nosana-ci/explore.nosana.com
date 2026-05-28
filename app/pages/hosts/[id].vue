@@ -14,11 +14,12 @@
     </div>
   </div>
   
-  <!-- Template Performance Comparison -->
+  <!-- Host Metrics Overview -->
   <div v-if="nodeSpecs">
-    <TemplatePerformanceChart
-      title="Template Performance Comparison"
+    <HostMetricsChart
+      title="Host Metrics Overview"
       :node-id="address"
+      :market-address="benchmarkMarketId"
       default-metric="tokensPerSecond"
     />
   </div>
@@ -41,7 +42,7 @@
 import GeneralInfo from "~/components/Info/GeneralInfo.vue";
 import HostInfo from "~/components/Info/HostInfo.vue";
 import DeploymentList from "~/components/List/DeploymentList.vue";
-import TemplatePerformanceChart from "~/components/TemplatePerformanceChart.vue";
+import HostMetricsChart from "~/components/HostMetricsChart.vue";
 import { ref, computed, watch } from 'vue';
 import type { Ref, ComputedRef } from 'vue';
 
