@@ -5,10 +5,10 @@
         <div class="box">
           <div class="is-flex is-align-items-center">
             <h2 class="title is-5 mb-0">
-              Jobs
+              {{ metric === 'hours' ? 'GPU Compute Hours' : 'Jobs' }}
               <span class="has-text-weight-bold ml-2">
-                <count-up v-if="timestamps"
-                  :end-val="totalDeployments"></count-up>
+                <count-up v-if="timestamps" :end-val="totalDeployments"
+                  :decimal-places="metric === 'hours' ? 1 : 0"></count-up>
                 <span v-else-if="loadingTimestamps">...</span>
                 <span v-else>-</span>
               </span>
@@ -23,6 +23,12 @@
             </h2>
 
             <div class="select is-small ml-auto">
+              <select v-model="metric">
+                <option value="hours">GPU compute hours</option>
+                <option value="count">Job count</option>
+              </select>
+            </div>
+            <div class="select is-small ml-2">
               <select v-model="time">
                 <option :value="1 * 3600">1h</option>
                 <option :value="24 * 3600">24h</option>
@@ -77,8 +83,12 @@ dayjs.extend(isoWeek);
 // }
 
 const time: Ref<number | string> = ref(365 / 12 * 24 * 3600); // 1 month
+const metric: Ref<'hours' | 'count'> = ref('hours'); // GPU compute hours by default
 
-const timestampsUrl = computed(() => { return `/api/jobs/stats/timestamps?period=${time.value}` })
+const timestampsUrl = computed(() => {
+  const endpoint = metric.value === 'hours' ? 'timestamps-hours' : 'timestamps';
+  return `/api/jobs/stats/${endpoint}?period=${time.value}`
+})
 watch(timestampsUrl, () => {
   timestamps.value = null
 })
@@ -151,7 +161,7 @@ const chartData = computed<ChartData<'line'>>(() => {
       {
         fill: true,
         cubicInterpolationMode: 'monotone',
-        label: 'Jobs',
+        label: metric.value === 'hours' ? 'GPU Compute Hours' : 'Jobs',
         borderColor: '#2feb2b',
         showLine: true,
         backgroundColor: '#2feb2b45',
