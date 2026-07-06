@@ -38,7 +38,7 @@ export function useJob(jobId: string) {
   const { getIpfs } = useIpfs();
   const { status, data: userData, token } = useAuth();
   const { connected, publicKey } = useWallet();
-  const { data, pending, refresh } = useAPI("/api/jobs/" + jobId, {
+  const { data, pending, status: fetchStatus, refresh } = useAPI("/api/jobs/" + jobId, {
     watch: false,
   });
 
@@ -308,8 +308,8 @@ export function useJob(jobId: string) {
     }
   );
 
-  watch(pending, (isPending) => {
-    if (!isPending && !data.value && !job.value) {
+  watch(fetchStatus, (currentStatus) => {
+    if ((currentStatus === "success" || currentStatus === "error") && !data.value && !job.value) {
       loading.value = false;
     }
   }, { immediate: true });
