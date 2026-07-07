@@ -209,10 +209,10 @@ const metricGroupConfig: Record<
 };
 
 const apiUrl = computed(() => {
-  const params = new URLSearchParams({
-    nodeId: props.nodeId,
-  });
-
+  const params = new URLSearchParams({ nodeId: props.nodeId });
+  if (props.marketAddress) {
+    params.set('marketAddress', props.marketAddress);
+  }
   return `/api/benchmarks/market-metric-aggregates?${params.toString()}`;
 });
 
