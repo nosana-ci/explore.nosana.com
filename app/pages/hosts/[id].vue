@@ -15,7 +15,7 @@
   </div>
   
   <!-- Host Metrics Overview -->
-  <div v-if="nodeSpecs">
+  <div v-if="nodeSpecs && benchmarkMarketIdReady">
     <HostMetricsChart
       title="Host Metrics Overview"
       :node-id="address"
@@ -76,6 +76,8 @@ const { data: nodeInfo, pending: loadingNodeInfo } = useAPI(
 
 // Create a ref to store the market relation result
 const marketRelationId = ref<string | null>(null);
+const loadingMarketRelation = ref(false);
+const marketRelationSettled = ref(false);
 
 // Define a function to fetch the market relation
 async function fetchMarketRelation() {
@@ -83,6 +85,7 @@ async function fetchMarketRelation() {
     nodeSpecs.value?.status === "ONBOARDED" &&
     nodeSpecs.value.marketAddress
   ) {
+    loadingMarketRelation.value = true;
     try {
       const { data } = await useAPI(
         `/api/nodes/market-relation?market=${nodeSpecs.value.marketAddress}`
@@ -90,6 +93,9 @@ async function fetchMarketRelation() {
       marketRelationId.value = data.value;
     } catch (err) {
       console.error("Error fetching market relation:", err);
+    } finally {
+      loadingMarketRelation.value = false;
+      marketRelationSettled.value = true;
     }
   }
 }
@@ -103,6 +109,25 @@ watch(
   },
   { immediate: true }
 );
+
+// Whether benchmarkMarketId has finished resolving (including the async
+// market-relation lookup for ONBOARDED nodes with a market). Rendering
+// HostMetricsChart before this settles causes it to mount with an
+// undefined marketAddress, fetch, then immediately re-fetch once the real
+// value resolves - flashing the chart and then hiding it during the
+// second fetch's loading state.
+const benchmarkMarketIdReady = computed(() => {
+  if (!nodeSpecs.value) {
+    return false;
+  }
+  if (!nodeSpecs.value.marketAddress) {
+    return true;
+  }
+  if (nodeSpecs.value.status === "ONBOARDED") {
+    return !loadingMarketRelation.value && marketRelationSettled.value;
+  }
+  return true;
+});
 
 const benchmarkMarketId = computed(() => {
   if (!nodeSpecs.value || !nodeSpecs.value.marketAddress) {

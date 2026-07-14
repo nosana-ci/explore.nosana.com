@@ -4,37 +4,26 @@
     <div class="quick-detail-item">
       <span class="quick-detail-label">Status</span>
       <span class="quick-detail-value">
-        <span v-if="!isNode">
-          <span v-if="loadingJobs || loadingSpecs || loadingMarkets || loadingRuns">...</span>
-          <span v-else>Not a host</span>
-        </span>
-        <span v-else-if="!queueInfo">
-          <span v-if="loadingMarkets || loadingRuns">...</span>
-          <span v-else>
-            <div
-              v-if="nodeRuns && nodeRuns.length"
-              data-tooltip="Host is running a deployment"
-              style="width: fit-content"
-              class="is-flex"
-            >
-              <JobStatus :status="'RUNNING'"></JobStatus>
-            </div>
-            <div v-else>
-              <span v-if="nodeInfo">(Re)starting</span>
-              <span v-else-if="loadingInfo">...</span>
-              <span v-else>Offline</span>
-            </div>
-          </span>
-        </span>
-        <div v-else style="width: fit-content" class="is-flex">
-          <div
-            data-tooltip="Host is queued in market"
-            style="width: fit-content"
-            class="is-flex"
-          >
-            <JobStatus :status="'QUEUED'"></JobStatus>
-          </div>
+        <div
+          v-if="statusType === 'RUNNING'"
+          data-tooltip="Host is running a deployment"
+          style="width: fit-content"
+          class="is-flex"
+        >
+          <JobStatus :status="'RUNNING'"></JobStatus>
         </div>
+        <div
+          v-else-if="statusType === 'QUEUED'"
+          data-tooltip="Host is queued in market"
+          style="width: fit-content"
+          class="is-flex"
+        >
+          <JobStatus :status="'QUEUED'"></JobStatus>
+        </div>
+        <div v-else-if="statusType === 'OFFLINE'" style="width: fit-content" class="is-flex">
+          <JobStatus :status="'OFFLINE'"></JobStatus>
+        </div>
+        <span v-else>{{ statusText }}</span>
       </span>
     </div>
   </div>
@@ -278,46 +267,49 @@ const isNode: ComputedRef<Boolean> = computed(() => {
   }
 );
 
+// Specs come from host-manager (nodeSpecs.metrics), not the deprecated node
+// /node/info payload — that live source is flaky and caused the specs to flash
+// fresh then revert to stale cached values. nodeInfo is used for status only.
 const cliVersion = computed(() => {
-  return nodeInfo.value?.info?.version ?? nodeSpecs.value?.metrics?.node_version ?? null;
+  return nodeSpecs.value?.metrics?.node_version ?? null;
 });
 
 const systemEnvironment = computed(() => {
-  const value = nodeInfo.value?.info?.system_environment ?? nodeSpecs.value?.metrics?.system_environment;
+  const value = nodeSpecs.value?.metrics?.system_environment;
   if (!value) return null;
 
   return String(value).toLowerCase().includes("wsl") ? "WSL" : "Linux";
 });
 
 const hasMetricSources = computed(() => {
-  return Boolean(nodeInfo.value?.info || nodeSpecs.value?.metrics);
+  return Boolean(nodeSpecs.value?.metrics);
 });
 
 const metricFields: MetricField[] = [
   {
     key: "gpu",
     label: "GPU",
-    paths: ["nodeInfo.info.gpus.devices.0.name", "metrics.gpu.devices.0.name"],
+    paths: ["metrics.gpu.devices.0.name"],
   },
   {
     key: "nvidiaDriver",
     label: "NVIDIA Driver",
-    paths: ["nodeInfo.info.gpus.nvml_driver_version", "metrics.gpu.nvml_driver_version", "metrics.nvml_version"],
+    paths: ["metrics.gpu.nvml_driver_version", "metrics.nvml_version"],
   },
   {
     key: "cudaVersion",
     label: "CUDA Version",
-    paths: ["nodeInfo.info.gpus.cuda_driver_version", "metrics.gpu.runtime_version", "metrics.cuda_runtime_version"],
+    paths: ["metrics.gpu.runtime_version", "metrics.cuda_runtime_version"],
   },
   {
     key: "cpu",
     label: "CPU",
-    paths: ["nodeInfo.info.cpu.model", "metrics.cpu.cpu_model", "metrics.cpu_model"],
+    paths: ["metrics.cpu.cpu_model", "metrics.cpu_model"],
   },
   {
     key: "ram",
     label: "RAM",
-    paths: ["nodeInfo.info.ram_mb", "metrics.ram_gb", "metrics.ram_mb"],
+    paths: ["metrics.ram_gb", "metrics.ram_mb"],
     transformPaths: {
       "metrics.ram_gb": "gbToMb",
     },
@@ -326,13 +318,13 @@ const metricFields: MetricField[] = [
   {
     key: "diskSpace",
     label: "Disk Space",
-    paths: ["nodeInfo.info.disk_gb", "metrics.disk_gb"],
+    paths: ["metrics.disk_gb"],
     formatter: "gb",
   },
   {
     key: "country",
     label: "Country",
-    paths: ["nodeInfo.info.country", "metrics.network.country", "metrics.country"],
+    paths: ["metrics.network.country", "metrics.country"],
     formatter: "country",
   },
   {
@@ -355,12 +347,69 @@ const metricFields: MetricField[] = [
 ];
 
 const metricSources = computed(() => ({
-  nodeInfo: nodeInfo.value,
   metrics: nodeSpecs.value?.metrics,
   derived: {
     systemEnvironment: systemEnvironment.value,
   },
 }));
+
+// --- Status derivation (identical to host-ui HostQuickDetails) ---
+
+// Address of the running deployment, if any (on-chain runs for this node).
+const runningJobAddress = computed<string | null>(() => {
+  const list = nodeRuns.value || [];
+  return list.length ? list[0].account.job : null;
+});
+
+// The node's own live self-reported state category (see the node's
+// classifyState). Present only when the node API is reachable.
+const nodeState = computed<string | null>(() => nodeInfo.value?.state ?? null);
+
+// The node API returns a payload (state/info) only when reachable; on error the
+// fetch resolves to null. Use that presence as the online/offline signal.
+const nodeReachable = computed(() => !!(nodeInfo.value && (nodeInfo.value.state || nodeInfo.value.info)));
+
+// Human-readable label per node self-reported state category.
+const NODE_STATE_TEXT: Record<string, string> = {
+  RUNNING_JOB: "Running",
+  QUEUED: "Queued",
+  JOINING_MARKET: "Queued",
+  RESTARTING: "Restarting",
+  STARTING: "Starting",
+  BENCHMARKING: "Benchmarking",
+  HEALTHCHECK: "Health check",
+  OTHER: "Online",
+};
+
+const statusType = computed(() => {
+  if (loadingInfo.value || loadingRuns.value) return null;
+  if (!isNode.value) return null;
+  // Prefer the node's own live self-report when reachable — it reflects what
+  // the node is actually doing even when on-chain job/queue data is stale.
+  if (nodeReachable.value) {
+    if (nodeState.value === "RUNNING_JOB") return "RUNNING";
+    if (nodeState.value === "QUEUED" || nodeState.value === "JOINING_MARKET") return "QUEUED";
+    // Reachable but transient/idle (restarting, benchmarking, …) → rendered as
+    // text via statusText, no badge.
+    return null;
+  }
+  // Node API unreachable — fall back to on-chain signals, else offline. A
+  // detected running job takes precedence over stale queue membership.
+  if (runningJobAddress.value) return "RUNNING";
+  if (queueInfo.value) return "QUEUED";
+  return "OFFLINE";
+});
+
+const statusText = computed(() => {
+  if (loadingInfo.value || loadingRuns.value) return "...";
+  if (!isNode.value) return "Not a host";
+  if (nodeReachable.value) {
+    return (nodeState.value && NODE_STATE_TEXT[nodeState.value]) || "Online";
+  }
+  if (runningJobAddress.value) return "Running";
+  if (queueInfo.value) return "Queued";
+  return "Offline";
+});
 
 
 /*********************
