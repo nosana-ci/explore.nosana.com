@@ -141,7 +141,7 @@
           v{{ cliVersion }}
         </span>
         <span v-else-if="loadingInfo || loadingSpecs">...</span>
-        <span v-else>Offline</span>
+        <span v-else>-</span>
       </span>
     </div>
   </div>
@@ -271,7 +271,13 @@ const isNode: ComputedRef<Boolean> = computed(() => {
 // /node/info payload — that live source is flaky and caused the specs to flash
 // fresh then revert to stale cached values. nodeInfo is used for status only.
 const cliVersion = computed(() => {
-  return nodeSpecs.value?.metrics?.node_version ?? null;
+  // host-manager stores the CLI version under `package_version`; fall back to
+  // the node's own live `/node/info` version when host-manager doesn't have it.
+  return (
+    nodeSpecs.value?.metrics?.package_version ??
+    nodeInfo.value?.info?.version ??
+    null
+  );
 });
 
 const systemEnvironment = computed(() => {
@@ -361,53 +367,28 @@ const runningJobAddress = computed<string | null>(() => {
   return list.length ? list[0].account.job : null;
 });
 
-// The node's own live self-reported state category (see the node's
-// classifyState). Present only when the node API is reachable.
-const nodeState = computed<string | null>(() => nodeInfo.value?.state ?? null);
-
 // The node API returns a payload (state/info) only when reachable; on error the
 // fetch resolves to null. Use that presence as the online/offline signal.
 const nodeReachable = computed(() => !!(nodeInfo.value && (nodeInfo.value.state || nodeInfo.value.info)));
 
-// Human-readable label per node self-reported state category.
-const NODE_STATE_TEXT: Record<string, string> = {
-  RUNNING_JOB: "Running",
-  QUEUED: "Queued",
-  JOINING_MARKET: "Queued",
-  RESTARTING: "Restarting",
-  STARTING: "Starting",
-  BENCHMARKING: "Benchmarking",
-  HEALTHCHECK: "Health check",
-  OTHER: "Online",
-};
-
+// Status: on-chain running/queued take precedence; otherwise the node API's
+// reachability decides restarting (up) vs offline (down). A detected running
+// job wins over stale queue membership.
 const statusType = computed(() => {
   if (loadingInfo.value || loadingRuns.value) return null;
   if (!isNode.value) return null;
-  // Prefer the node's own live self-report when reachable — it reflects what
-  // the node is actually doing even when on-chain job/queue data is stale.
-  if (nodeReachable.value) {
-    if (nodeState.value === "RUNNING_JOB") return "RUNNING";
-    if (nodeState.value === "QUEUED" || nodeState.value === "JOINING_MARKET") return "QUEUED";
-    // Reachable but transient/idle (restarting, benchmarking, …) → rendered as
-    // text via statusText, no badge.
-    return null;
-  }
-  // Node API unreachable — fall back to on-chain signals, else offline. A
-  // detected running job takes precedence over stale queue membership.
   if (runningJobAddress.value) return "RUNNING";
   if (queueInfo.value) return "QUEUED";
-  return "OFFLINE";
+  if (!nodeReachable.value) return "OFFLINE";
+  return null; // reachable but idle → "(Re)starting" via statusText
 });
 
 const statusText = computed(() => {
   if (loadingInfo.value || loadingRuns.value) return "...";
   if (!isNode.value) return "Not a host";
-  if (nodeReachable.value) {
-    return (nodeState.value && NODE_STATE_TEXT[nodeState.value]) || "Online";
-  }
   if (runningJobAddress.value) return "Running";
   if (queueInfo.value) return "Queued";
+  if (nodeReachable.value) return "(Re)starting";
   return "Offline";
 });
 
