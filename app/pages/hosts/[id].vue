@@ -43,7 +43,7 @@ import GeneralInfo from "~/components/Info/GeneralInfo.vue";
 import HostInfo from "~/components/Info/HostInfo.vue";
 import DeploymentList from "~/components/List/DeploymentList.vue";
 import HostMetricsChart from "~/components/HostMetricsChart.vue";
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import type { Ref, ComputedRef } from 'vue';
 
 const { params } = useRoute();
@@ -74,72 +74,15 @@ const { data: nodeInfo, pending: loadingNodeInfo } = useAPI(
   }
 );
 
-// Create a ref to store the market relation result
-const marketRelationId = ref<string | null>(null);
-const loadingMarketRelation = ref(false);
-const marketRelationSettled = ref(false);
-
-// Define a function to fetch the market relation
-async function fetchMarketRelation() {
-  if (
-    nodeSpecs.value?.status === "ONBOARDED" &&
-    nodeSpecs.value.marketAddress
-  ) {
-    loadingMarketRelation.value = true;
-    try {
-      const { data } = await useAPI(
-        `/api/nodes/market-relation?market=${nodeSpecs.value.marketAddress}`
-      );
-      marketRelationId.value = data.value;
-    } catch (err) {
-      console.error("Error fetching market relation:", err);
-    } finally {
-      loadingMarketRelation.value = false;
-      marketRelationSettled.value = true;
-    }
-  }
-}
-
-watch(
-  nodeSpecs,
-  (newSpecs) => {
-    if (newSpecs && newSpecs.status === "ONBOARDED" && newSpecs.marketAddress) {
-      fetchMarketRelation();
-    }
-  },
-  { immediate: true }
-);
-
-// Whether benchmarkMarketId has finished resolving (including the async
-// market-relation lookup for ONBOARDED nodes with a market). Rendering
-// HostMetricsChart before this settles causes it to mount with an
-// undefined marketAddress, fetch, then immediately re-fetch once the real
-// value resolves - flashing the chart and then hiding it during the
-// second fetch's loading state.
-const benchmarkMarketIdReady = computed(() => {
-  if (!nodeSpecs.value) {
-    return false;
-  }
-  if (!nodeSpecs.value.marketAddress) {
-    return true;
-  }
-  if (nodeSpecs.value.status === "ONBOARDED") {
-    return !loadingMarketRelation.value && marketRelationSettled.value;
-  }
-  return true;
-});
+// Compare the host against its own market. Rendering HostMetricsChart
+// before nodeSpecs resolves would mount it with an undefined
+// marketAddress, fetch, then immediately re-fetch once the real value
+// resolves - flashing the chart and then hiding it during the second
+// fetch's loading state.
+const benchmarkMarketIdReady = computed(() => !!nodeSpecs.value);
 
 const benchmarkMarketId = computed(() => {
-  if (!nodeSpecs.value || !nodeSpecs.value.marketAddress) {
-    return undefined;
-  }
-  if (nodeSpecs.value.status === "ONBOARDED") {
-    if (!marketRelationId.value) {
-      return undefined;
-    }
-    return marketRelationId.value;
-  }
-  return nodeSpecs.value.marketAddress;
+  return nodeSpecs.value?.marketAddress || undefined;
 });
 
 // Job list data - moved from HostInfo
