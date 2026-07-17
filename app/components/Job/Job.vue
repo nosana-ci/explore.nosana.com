@@ -22,7 +22,8 @@
                   </span>
                 </div>
               </div>
-              <StatusTag class="ml-4" :status="props.job.state" />
+              <StatusTag v-if="props.job" class="ml-4" 
+              :status="props.job.state === 2 && props.job.jobStatus ? (props.job.jobStatus === 'success' ? 'SUCCESS' : 'FAILED') : props.job.state" />
             </div>
           </div>
           <div class="deployment-tabs">
