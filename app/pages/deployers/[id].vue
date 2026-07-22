@@ -26,6 +26,7 @@
 <script setup lang="ts">
 import GeneralInfo from "~/components/Info/GeneralInfo.vue";
 import DeploymentList from "~/components/List/DeploymentList.vue";
+import { jobStateMapping } from "@nosana/sdk";
 import { ref, computed } from 'vue';
 import type { Ref, ComputedRef } from 'vue';
 
@@ -35,12 +36,6 @@ const address: Ref<string> = ref(params.id as string);
 // Job list data - jobs posted by this deployer
 const page: Ref<number> = ref(1);
 const state: Ref<number | null> = ref(null);
-const jobStateMapping: Record<number, string> = {
-  0: "QUEUED",
-  1: "RUNNING",
-  2: "COMPLETED",
-  3: "STOPPED",
-};
 const limit: Ref<number> = ref(10);
 const jobsUrl: ComputedRef<string> = computed(() => {
   return `/api/jobs?limit=${limit.value}&offset=${
