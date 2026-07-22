@@ -44,7 +44,10 @@ import { onKeyStroke } from "@vueuse/core";
 import { PublicKey } from "@solana/web3.js";
 import SearchIcon from "@/assets/img/icons/search.svg?component";
 import type { Market } from "@nosana/sdk";
-type SearchItem = { value: string; type: "market" | "account" | "job" | "node" };
+type SearchItem = {
+  value: string;
+  type: "market" | "account" | "job" | "node" | "deployer";
+};
 
 const router = useRouter();
 const address = ref("");
@@ -58,6 +61,7 @@ const selectItem = async (item: { type: string; value: string }) => {
     checkingIfJob.value = true;
     let isJob = false;
     let isNode = false;
+    let isDeployer = false;
 
     try {
       const { data: job } = await useAPI(`/api/jobs/${item.value}`, {
@@ -87,10 +91,29 @@ const selectItem = async (item: { type: string; value: string }) => {
       }
     }
 
+    // Check whether this account has posted any jobs (deployer)
+    if (!isJob && !isNode) {
+      try {
+        const { data: deployerJobs } = await useAPI(
+          `/api/jobs?limit=1&offset=0&poster=${item.value}`,
+          {
+            // @ts-ignore TODO: add to useAPI opts type
+            disableToastOnError: true,
+          }
+        );
+        if (deployerJobs.value && deployerJobs.value.totalJobs > 0) {
+          item.type = "deployer";
+          isDeployer = true;
+        }
+      } catch (error) {
+        // Deployer check failed
+      }
+    }
+
     checkingIfJob.value = false;
 
-    // If not a job or node, default to account
-    if (!isJob && !isNode) {
+    // If not a job, node or deployer, fall back to account (no Nosana activity)
+    if (!isJob && !isNode && !isDeployer) {
       item.type = "account";
     }
   }
@@ -106,8 +129,11 @@ const selectItem = async (item: { type: string; value: string }) => {
     case "market":
       router.push(`/markets/${item.value}`);
       break;
+    case "deployer":
+      router.push(`/deployers/${item.value}`);
+      break;
     default:
-      router.push(`/${item.type}/${item.value}`);
+      router.push(`/account/${item.value}`);
   }
 };
 

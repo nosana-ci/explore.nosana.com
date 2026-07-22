@@ -55,7 +55,12 @@
                 <tr>
                   <td>Deployer</td>
                   <td>
-                    <span class="is-family-monospace">
+                    <span v-if="props.job.project && props.job.project.toString() !== '11111111111111111111111111111111'">
+                      <nuxt-link :to="`/deployers/${props.job.project}`" class="has-text-link is-family-monospace">
+                        {{ props.job.project.toString() }}
+                      </nuxt-link>
+                    </span>
+                    <span v-else class="is-family-monospace">
                       {{ props.job.project?.toString() }}
                     </span>
                   </td>
