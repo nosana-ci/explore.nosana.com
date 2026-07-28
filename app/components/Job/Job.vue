@@ -125,6 +125,11 @@
           </div>
         </div>
 
+        <!-- On-chain activity, hidden when the API has no events endpoint -->
+        <div class="mt-6" v-if="jobEventsSupported && !loadingJobEvents">
+          <JobEventTimeline :events="jobEvents" :markets="testgridMarkets" />
+        </div>
+
       </div>
 
       <!-- Job Definition Tab -->
@@ -161,6 +166,7 @@ import JobStatus from "~/components/Job/Status.vue";
 import JobPrice from "~/components/Job/Price.vue";
 import JobResult from "~/components/Job/Result.vue";
 import JobDefinitionTab from "~/components/Job/Tabs/JobDefinition.vue";
+import JobEventTimeline from "~/components/Job/EventTimeline.vue";
 import SecondsFormatter from "~/components/SecondsFormatter.vue";
 import StatusTag from "~/components/Common/StatusTag.vue";
 
@@ -168,6 +174,7 @@ import { useTemplates } from "~/composables/useTemplates";
 import { useToast } from "vue-toastification";
 import { useAPI } from "~/composables/useAPI";
 import { useJobPricing } from "~/composables/useMarketPricing";
+import { useJobEvents } from "~/composables/jobs/useJobEvents";
 
 // Import icons as components
 import ChevronDownIcon from '@/assets/img/icons/chevron-down.svg?component';
@@ -317,6 +324,16 @@ onMounted(() => {
 });
 const toast = useToast();
 const router = useRouter();
+
+// On-chain job lifecycle events from the indexer; keeps polling while the job
+// can still produce new ones (queued or running).
+const {
+  events: jobEvents,
+  loading: loadingJobEvents,
+  supported: jobEventsSupported,
+} = useJobEvents(props.job.address, {
+  isActive: computed(() => Boolean(props.job.isActive)),
+});
 
 const currentTime = ref(Math.floor(Date.now() / 1000));
 let timerId: NodeJS.Timeout | null = null;
