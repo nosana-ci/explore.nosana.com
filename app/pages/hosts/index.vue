@@ -39,64 +39,32 @@ import RocketIcon from "~/assets/img/icons/rocket.svg?component";
 import Loader from "~/components/Loader.vue";
 import Search from "~/components/Search.vue";
 
-const { data: nodeStatsResponse } = await useAPI("/api/stats/nodes-country");
 const loading = ref(false);
 
-// Get running nodes from jobs API
-const { data: runningNodesData } = useAPI("/api/jobs/running", {
-  transform: (data: any) => {
-    if (!data) return { total: 0 };
-    return {
-      total: Object.values(data).reduce(
-        (sum: number, market: any) => sum + (market.running || 0),
-        0
-      ),
-    };
-  },
-  default: () => ({ total: 0 }),
-});
+// Same data source/formula as the markets page
+const { markets, getMarkets, loadingMarkets } = useMarkets();
+const { data: runningJobs } = await useAPI("/api/jobs/running");
 
-// Define interface for node stats item
-interface NodeStatsItem {
-  country: string;
-  active: number;
-  offline: number;
-  total: number;
+if (!markets.value && !loadingMarkets.value) {
+  getMarkets();
 }
 
-// Calculate total active hosts
+// Hosts currently idle/queued
 const queuedHosts = computed(() => {
-  if (
-    !nodeStatsResponse.value ||
-    !Array.isArray(nodeStatsResponse.value)
-  )
-    return 0;
-
-  let total = 0;
-  nodeStatsResponse.value.forEach((item: NodeStatsItem) => {
-    if (item.active > 0) {
-      total += item.active;
-    }
-  });
-
-  return total;
+  if (!markets.value) return 0;
+  return markets.value.reduce((a, b) => {
+    return a + (b.queueType === 1 && b.queue ? b.queue.length : 0);
+  }, 0);
 });
 
 const activeHosts = computed(() => {
-  if (
-    !nodeStatsResponse.value ||
-    !Array.isArray(nodeStatsResponse.value)
-  )
-    return 0;
-
-  let total = 0;
-  nodeStatsResponse.value.forEach((item: NodeStatsItem) => {
-    if (item.total > 0) {
-      total += item.total;
-    }
-  });
-
-  return total + (runningNodesData.value?.total || 0);
+  const running: number = runningJobs.value
+    ? (Object.values(runningJobs.value) as any[]).reduce(
+        (a: number, b: any) => a + (b.running || 0),
+        0
+      )
+    : 0;
+  return queuedHosts.value + running;
 });
 </script>
 
