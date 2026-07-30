@@ -25,7 +25,7 @@
               return a + (b.queueType === 1 && b.queue
                 ? b.queue.length
                 : 0);
-            }, 0) + Object.values(runningJobs).reduce((a: any, b: any) => a + b.running, 0)
+            }, 0) + Object.values(runningJobs).reduce((a: any, b: any) => a + (b.running || 0), 0)
           }}</span>
           <br>
           <span class="subtitle"> hosts available</span>
@@ -38,7 +38,7 @@
                     return a + (b.queueType === 1
                       ? b.queue.length
                       : 0);
-                  }, 0), Object.values(runningJobs).reduce((a: any, b: any) => a + b.running, 0)],
+                  }, 0), Object.values(runningJobs).reduce((a: any, b: any) => a + (b.running || 0), 0)],
                   backgroundColor: ['#10E80C', '#d3fdd3'],
                 }
               ]

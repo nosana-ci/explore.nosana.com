@@ -115,8 +115,7 @@
                         {{ market.queue.length }} /
                         <span v-if="runningJobs">
                           <span>
-                            {{ market.queue.length + (runningJobs[market.address.toString()] ?
-                              runningJobs[market.address.toString()].running : 0) }}
+                            {{ market.queue.length + getRunningCount(market) }}
                           </span>
                         </span>
                         <span v-else>
@@ -125,8 +124,7 @@
                       </span>
                       <span>
                         hosts</span>
-                      <span><progress class="is-pulled-right progress is-secondary" :value="market.queue.length" :max="market.queue.length + (runningJobs[market.address.toString()] ?
-                        runningJobs[market.address.toString()].running : 0)"></progress></span>
+                      <span><progress class="is-pulled-right progress is-secondary" :value="market.queue.length" :max="market.queue.length + getRunningCount(market)"></progress></span>
                     </template>
                   </span>
                   <span v-else>
@@ -134,15 +132,14 @@
                     <span v-else>
                       0 /
                       <span v-if="runningJobs">
-                        {{ (runningJobs[market.address.toString()] ? runningJobs[market.address.toString()].running : 0) }}
+                        {{ getRunningCount(market) }}
                       </span>
                       <span v-else>
                         ?
                       </span>
                       <span>
                         hosts</span>
-                      <span><progress class="is-pulled-right progress is-secondary" :value="0" :max="(runningJobs[market.address.toString()] ?
-                        runningJobs[market.address.toString()].running : 0)"></progress></span>
+                      <span><progress class="is-pulled-right progress is-secondary" :value="0" :max="getRunningCount(market)"></progress></span>
                     </span>
                     <br>
                     <small v-if="market.queueType === 0">{{ market.queue.length }} deployments queued</small>
@@ -308,6 +305,13 @@ const getMarketHourlyPrice = (market: Market) => {
   }
   
   return Number.MAX_VALUE;
+};
+
+// Number of running jobs/hosts for a market
+const getRunningCount = (market: Market) => {
+  if (!runningJobs.value) return 0;
+  const entry = runningJobs.value[market.address.toString()];
+  return entry?.running || 0;
 };
 
 // Helper to check if market has available GPUs
