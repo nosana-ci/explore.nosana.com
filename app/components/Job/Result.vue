@@ -12,8 +12,8 @@
         </span>
       </button>
 
-      <div v-if="ipfsResult?.opStates" class="is-family-monospace has-background-black has-text-white box light-mode result-box job-result-container" style="counter-reset: line" ref="resultContainer">
-        <div v-for="opState in ipfsResult.opStates" :key="opState.operationId">
+      <div v-if="ipfsResult?.opStates || ipfsResult?.errors?.length" class="is-family-monospace has-background-black has-text-white box light-mode result-box job-result-container" style="counter-reset: line" ref="resultContainer">
+        <div v-for="opState in (ipfsResult.opStates || [])" :key="opState.operationId">
           <div class="row-count has-text-link">
             <span>- Executed step '{{ opState.operationId }}'</span>
           </div>
@@ -29,6 +29,14 @@
           </div>
 
         </div>
+        <template v-if="ipfsResult.errors?.length">
+          <div class="row-count has-text-danger">
+            <span>- Job failed{{ ipfsResult.status ? ` with status '${ipfsResult.status}'` : '' }}</span>
+          </div>
+          <div v-for="(error, ei) in ipfsResult.errors" :key="ei" class="row-count has-text-danger">
+            <span class="pre">{{ error }}</span>
+          </div>
+        </template>
       </div>
       <div v-else-if="ipfsJob?.ops" class="is-family-monospace has-background-black has-text-white box result-box job-result-container"
         style="counter-reset: line" ref="resultContainer">
@@ -93,13 +101,13 @@
     </div>
 
     <FullscreenModal :isOpen="resultModal.isOpen.value" title="Job Results" @close="resultModal.close">
-      <div v-if="ipfsResult.opStates" class="is-family-monospace has-background-black has-text-white box light-mode result-box job-result-container fullscreen-viewer" style="counter-reset: line" ref="fullscreenResultContainer">
-        <div v-for="opState in ipfsResult.opStates" :key="opState.operationId">
+      <div v-if="ipfsResult.opStates || ipfsResult.errors?.length" class="is-family-monospace has-background-black has-text-white box light-mode result-box job-result-container fullscreen-viewer" style="counter-reset: line" ref="fullscreenResultContainer">
+        <div v-for="opState in (ipfsResult.opStates || [])" :key="opState.operationId">
           <div class="row-count has-text-link">
             <span>- Executed step '{{ opState.operationId }}'</span>
           </div>
-          <div v-for="(log, ik) in opState.logs" :key="ik" class="row-count">
-            <span class="pre" v-html="escapeHtml((log.log || '').slice(0, 10000))" />
+          <div v-for="(log, ik) in (opState.logs || [])" :key="ik" class="row-count">
+            <span class="pre" v-html="escapeHtml((log?.log || '').slice(0, 10000))" />
           </div>
           <div class="row-count"></div>
           <div v-if="opState.status" class="row-count" :class="{
@@ -109,6 +117,14 @@
         } ` }}
           </div>
         </div>
+        <template v-if="ipfsResult.errors?.length">
+          <div class="row-count has-text-danger">
+            <span>- Job failed{{ ipfsResult.status ? ` with status '${ipfsResult.status}'` : '' }}</span>
+          </div>
+          <div v-for="(error, ei) in ipfsResult.errors" :key="ei" class="row-count has-text-danger">
+            <span class="pre">{{ error }}</span>
+          </div>
+        </template>
       </div>
       <div v-else-if="ipfsJob && ipfsJob.ops" class="is-family-monospace has-background-black has-text-white box result-box job-result-container fullscreen-viewer"
         style="counter-reset: line" ref="fullscreenResultContainer">

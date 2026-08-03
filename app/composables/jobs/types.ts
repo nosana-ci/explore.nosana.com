@@ -36,6 +36,7 @@ export interface ResultsSection {
   startTime?: number;
   endTime?: number;
   opStates: OpState[];
+  errors?: string[];
 }
 
 export interface JobInfo {
