@@ -20,6 +20,9 @@
           <div v-for="(log, ik) in (opState.logs || [])" :key="ik" class="row-count">
             <span class="pre" v-html="escapeHtml((log?.log || '').slice(0, 10000))" />
           </div>
+          <div v-for="(error, ei) in (opState.errors || [])" :key="ei" class="row-count has-text-danger">
+            <span class="pre">{{ formatError(error) }}</span>
+          </div>
           <div class="row-count"></div>
           <div v-if="opState.status" class="row-count" :class="{
         'has-text-link': !opState.exitCode,
@@ -34,7 +37,7 @@
             <span>- Job failed{{ ipfsResult.status ? ` with status '${ipfsResult.status}'` : '' }}</span>
           </div>
           <div v-for="(error, ei) in ipfsResult.errors" :key="ei" class="row-count has-text-danger">
-            <span class="pre">{{ error }}</span>
+            <span class="pre">{{ formatError(error) }}</span>
           </div>
         </template>
       </div>
@@ -109,6 +112,9 @@
           <div v-for="(log, ik) in (opState.logs || [])" :key="ik" class="row-count">
             <span class="pre" v-html="escapeHtml((log?.log || '').slice(0, 10000))" />
           </div>
+          <div v-for="(error, ei) in (opState.errors || [])" :key="ei" class="row-count has-text-danger">
+            <span class="pre">{{ formatError(error) }}</span>
+          </div>
           <div class="row-count"></div>
           <div v-if="opState.status" class="row-count" :class="{
         'has-text-link': !opState.exitCode,
@@ -122,7 +128,7 @@
             <span>- Job failed{{ ipfsResult.status ? ` with status '${ipfsResult.status}'` : '' }}</span>
           </div>
           <div v-for="(error, ei) in ipfsResult.errors" :key="ei" class="row-count has-text-danger">
-            <span class="pre">{{ error }}</span>
+            <span class="pre">{{ formatError(error) }}</span>
           </div>
         </template>
       </div>
@@ -195,6 +201,13 @@ import FullscreenModal from '~/components/Common/FullscreenModal.vue';
 import FullscreenIcon from '@/assets/img/icons/fullscreen.svg?component';
 import { useModal } from '~/composables/jobs/useModal';
 import { escapeHtml } from '~/utils/htmlSanitization';
+
+// Result errors are either plain strings or objects like { event, message, code }
+const formatError = (error: unknown): string => {
+  if (typeof error === 'string') return error;
+  const message = (error as { message?: unknown } | null)?.message;
+  return typeof message === 'string' ? message : JSON.stringify(error);
+};
 
 defineProps({
   ipfsJob: {

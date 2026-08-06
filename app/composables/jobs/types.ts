@@ -14,6 +14,8 @@ export interface EndpointsSection {
   urls: Record<string, EndpointInfo>;
 }
 
+export type ResultError = string | { message?: string; event?: string; code?: number };
+
 export interface OpState {
   operationId: string;
   status: string;
@@ -22,6 +24,7 @@ export interface OpState {
   exitCode?: number;
   results?: unknown;
   logs?: Array<{ log?: string; type?: string } | string> | any[];
+  errors?: ResultError[];
 }
 
 export interface OperationsInfo {
@@ -36,7 +39,7 @@ export interface ResultsSection {
   startTime?: number;
   endTime?: number;
   opStates: OpState[];
-  errors?: string[];
+  errors?: ResultError[];
 }
 
 export interface JobInfo {
