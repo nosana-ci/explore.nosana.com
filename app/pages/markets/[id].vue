@@ -46,7 +46,7 @@
                       :decimalPlaces="3" />
                   </td>
                 </tr>
-                <tr>
+                <!-- <tr>
                   <td>Host payment</td>
                   <td>
                     <span v-if="nosRatePerHour !== null">
@@ -58,7 +58,7 @@
                     <span v-else-if="loading || loadingStats">...</span>
                     <span v-else>N/A</span>
                   </td>
-                </tr>
+                </tr> -->
                 <tr>
                   <td>Access key</td>
                   <td>
