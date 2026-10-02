@@ -1,13 +1,13 @@
 <template>
   <div class="deployment-list-container" ref="containerRef" :style="{ minHeight: dynamicMinHeight }">
-  <div class="columns is-mobile is-vcentered">
+  <div class="columns is-vcentered">
     <div class="column">
       <h2 class="title" :class="{ 'is-5': small, 'is-4': !small }">
         {{ title ? title : 'Jobs' }}
       </h2>
     </div>
     <div class="column">
-      <div class="is-flex is-justify-content-flex-end is-align-items-center is-flex-wrap-wrap">
+      <div class="is-flex is-justify-content-flex-end is-align-items-center is-flex-wrap-wrap list-header-actions">
         <div v-if="jobs && jobs.length && (!small || (totalJobs && totalJobs > perPage))" class="mr-3 has-text-right">
           <span v-if="totalJobs && totalJobs > perPage">{{ (page - 1) * perPage + 1 }} -
             {{ Math.min(page * perPage, totalJobs) }} of</span>
@@ -309,6 +309,13 @@ watch(() => props.loadingJobs, (isLoading, wasLoading) => {
 @include touch {
   .table {
     white-space: normal;
+  }
+}
+
+// Columns stack on mobile, so align filters with the title
+@media screen and (max-width: 768px) {
+  .list-header-actions {
+    justify-content: flex-start !important;
   }
 }
 

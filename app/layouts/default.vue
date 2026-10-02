@@ -43,4 +43,12 @@ const pageTitle = computed(() => {
   max-width: 1600px;
   margin: 0 auto;
 }
+
+// Section padding is enough spacing on mobile
+@media screen and (max-width: 768px) {
+  .container.is-fluid {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
 </style>

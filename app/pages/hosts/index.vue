@@ -9,18 +9,18 @@
     <div class="box p-0 world-map-box">
       <div class="map-container">
         <WorldMap />
-        
-        <!-- Stats Overlay - Bottom Left -->
-        <div class="stats-overlay">
-          <div class="stats-box">
-            <span class="icon mr-3">
-              <RocketIcon class="rocket-icon" />
-            </span>
-            <div class="stats-text">
-              <div class="has-text-grey is-size-6">GPUs Available</div>
-              <div class="has-text-weight-bold is-size-4">
-                {{ queuedHosts }}/{{ activeHosts }}
-              </div>
+      </div>
+
+      <!-- Stats Overlay - Bottom Left -->
+      <div class="stats-overlay">
+        <div class="stats-box">
+          <span class="icon mr-3">
+            <RocketIcon class="rocket-icon" />
+          </span>
+          <div class="stats-text">
+            <div class="has-text-grey is-size-6">GPUs Available</div>
+            <div class="has-text-weight-bold is-size-4">
+              {{ queuedHosts }}/{{ activeHosts }}
             </div>
           </div>
         </div>
@@ -84,9 +84,10 @@ const activeHosts = computed(() => {
     min-height: 400px;
   }
 
+  // Size to the map on mobile instead of the viewport
   @media screen and (max-width: 768px) {
-    height: calc(100vh - 160px);
-    min-height: 350px;
+    height: auto;
+    min-height: 0;
     margin-bottom: 0;
   }
 }
@@ -95,6 +96,10 @@ const activeHosts = computed(() => {
   width: 100%;
   height: 100%;
   position: relative;
+
+  @media screen and (max-width: 768px) {
+    height: 400px;
+  }
 }
 
 .stats-overlay {
@@ -104,9 +109,10 @@ const activeHosts = computed(() => {
   z-index: 10;
   pointer-events: auto;
 
+  // Below the map on mobile so it doesn't cover it
   @media screen and (max-width: 768px) {
-    bottom: 1rem;
-    left: 1rem;
+    position: static;
+    margin-top: 1rem;
   }
 }
 
