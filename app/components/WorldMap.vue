@@ -1,6 +1,6 @@
 <template>
   <div class="box p-0">
-    <div class="world-map-container">
+    <div ref="scrollRef" class="world-map-container">
       <div class="aspect-ratio-container">
         <v-chart
           v-if="chartOptions"
@@ -321,7 +321,8 @@ const chartOptions = computed(() => {
     },
     geo: {
       map: "world",
-      roam: true,
+      // Mobile scrolls natively instead of panning
+      roam: !isMobile.value,
       scaleLimit: { min: 1, max: 10 },
       left: 0,
       right: 0,
@@ -405,118 +406,50 @@ const chartOptions = computed(() => {
 });
 
 const chartRef = ref();
+const scrollRef = ref<HTMLElement>();
 const is4K = ref(false);
+const isMobile = ref(false);
 
-// Check if screen is 4K
-const check4KScreen = () => {
+// Check screen size
+const checkScreen = () => {
   is4K.value = window.innerWidth >= 3840;
+  isMobile.value = window.innerWidth <= 768;
 };
 
-// Initialize chart with responsive size and enable touch interactions
-onMounted(() => {
-  // Check for 4K screen
-  check4KScreen();
-  window.addEventListener('resize', check4KScreen);
+// Resize chart to its container (or the viewport on 4K)
+const handleResize = () => {
+  if (!chartRef.value?.chart) return;
+  const container = chartRef.value.chart.getDom().parentElement;
+  const width = is4K.value ? window.innerWidth : container?.clientWidth || window.innerWidth;
+  const height = is4K.value ? window.innerHeight : container?.clientHeight || window.innerHeight;
+  chartRef.value.chart.resize({ width, height });
+};
 
-  // Wait for the chart to be mounted
-  nextTick(() => {
-    if (chartRef.value?.chart) {
-      // Get the container dimensions
-      const container = chartRef.value.chart.getDom().parentElement;
-      const containerWidth = container?.clientWidth || window.innerWidth;
-      const containerHeight = container?.clientHeight || window.innerHeight;
-      
-      // Set size based on screen resolution
-      if (is4K.value) {
-        // For 4K screens, use full viewport dimensions
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        chartRef.value.chart.resize({
-          width,
-          height
-        });
-        
-        // Lower zoom level for 4K to show full map
-        chartRef.value.chart.setOption({
-          animation: false,
-          geo: {
-            roam: true,
-            zoom: 0.7,
-            silent: false,
-            roamSensitivity: 1.5
-          }
-        });
-      } else {
-        // Responsive size for non-4K screens
-        chartRef.value.chart.resize({
-          width: containerWidth,
-          height: containerHeight
-        });
-        
-        // Lower zoom level to show full map without cutoff
-        chartRef.value.chart.setOption({
-          animation: false,
-          geo: {
-            roam: true,
-            zoom: 0.85,
-            silent: false,
-            roamSensitivity: 1.5
-          }
-        });
-      }
-      
-      // Add touch event listeners to improve mobile interaction
-      const chartDom = chartRef.value.chart.getDom();
-      if (chartDom) {
-        // Prevent default touch behavior to avoid page scrolling while panning the map
-        chartDom.addEventListener('touchmove', (e: TouchEvent) => {
-          if (e.touches.length > 0) {
-            e.preventDefault();
-          }
-        }, { passive: false });
-      }
-    }
-  });
+onMounted(() => {
+  checkScreen();
+  window.addEventListener('resize', checkScreen);
 });
 
-// Handle window resize for responsiveness
-const handleResize = () => {
-  if (chartRef.value?.chart) {
-    const container = chartRef.value.chart.getDom().parentElement;
-    const containerWidth = container?.clientWidth || window.innerWidth;
-    const containerHeight = container?.clientHeight || window.innerHeight;
-    
-    if (is4K.value) {
-      // For 4K screens, use full viewport dimensions
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      chartRef.value.chart.resize({
-        width,
-        height
-      });
-      
-      // Lower zoom level for 4K
-      chartRef.value.chart.setOption({
-        geo: {
-          zoom: 0.7
-        }
-      });
-    } else {
-      // Responsive size for non-4K screens
-      chartRef.value.chart.resize({
-        width: containerWidth,
-        height: containerHeight
-      });
-      
-      // Lower zoom level to show full map
-      chartRef.value.chart.setOption({
-        geo: {
-          zoom: 0.85
-        }
-      });
+// Chart only renders once data is loaded, so size it when it appears
+watch(chartRef, (chart) => {
+  if (!chart) return;
+  nextTick(() => {
+    handleResize();
+
+    // Start the horizontally scrollable mobile map centered
+    if (isMobile.value && scrollRef.value) {
+      scrollRef.value.scrollLeft = (scrollRef.value.scrollWidth - scrollRef.value.clientWidth) / 2;
     }
-  }
-};
+
+    // Prevent page scrolling while panning the map (desktop only, mobile scrolls natively)
+    const chartDom = chartRef.value?.chart?.getDom();
+    chartDom?.addEventListener('touchmove', (e: TouchEvent) => {
+      if (!isMobile.value && e.touches.length > 0) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  });
+});
 
 watch(is4K, handleResize);
 
@@ -527,7 +460,7 @@ onMounted(() => {
 
 // Clean up event listeners
 onUnmounted(() => {
-  window.removeEventListener('resize', check4KScreen);
+  window.removeEventListener('resize', checkScreen);
   window.removeEventListener('resize', handleResize);
 });
 
@@ -613,5 +546,27 @@ const handleMouseOut = (params: any) => {
   background: transparent !important;
   overflow: hidden;
   touch-action: none; /* Prevent browser handling of touch gestures */
+}
+
+/* Taller map on mobile at its natural aspect ratio, scrolled horizontally */
+@media screen and (max-width: 768px) {
+  .box,
+  .world-map-container,
+  .aspect-ratio-container,
+  .aspect-ratio-container > *,
+  :deep(.echarts) {
+    touch-action: pan-x pan-y;
+  }
+
+  .world-map-container {
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .aspect-ratio-container {
+    flex: none;
+    width: auto;
+    aspect-ratio: 360 / 145;
+  }
 }
 </style>

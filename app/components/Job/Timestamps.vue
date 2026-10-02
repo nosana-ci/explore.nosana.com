@@ -3,7 +3,7 @@
     <div class="columns">
       <div class="column is-12">
         <div class="box">
-          <div class="is-flex is-align-items-center">
+          <div class="is-flex is-align-items-center is-flex-wrap-wrap chart-header">
             <h2 class="title is-5 mb-0">
               {{ metric === 'hours' ? 'GPU Compute Hours' : 'Jobs' }}
               <span class="has-text-weight-bold ml-2">
@@ -233,6 +233,10 @@ const lineOptions = computed<ChartOptions<'line'>>(() => ({
 <style lang="scss" scoped>
 .countup-wrap {
   display: inline;
+}
+
+.chart-header {
+  row-gap: 0.5rem;
 }
 </style>
 <style lang="scss">
