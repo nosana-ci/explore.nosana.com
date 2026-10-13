@@ -72,22 +72,22 @@ const activeHosts = computed(() => {
 @use "sass:color";
 
 .world-map-box {
-  height: calc(100vh - 200px);
-  min-height: 500px;
+  // Match the map's shape, but never taller than the viewport
+  aspect-ratio: 360 / 145;
+  max-height: calc(100vh - 200px);
   margin-bottom: 0;
   overflow: visible;
   border-radius: 14px;
   position: relative;
 
   @media screen and (max-width: 1024px) {
-    height: calc(100vh - 180px);
-    min-height: 400px;
+    max-height: calc(100vh - 180px);
   }
 
   // Size to the map on mobile instead of the viewport
   @media screen and (max-width: 768px) {
-    height: auto;
-    min-height: 0;
+    aspect-ratio: auto;
+    max-height: none;
     margin-bottom: 0;
   }
 }
