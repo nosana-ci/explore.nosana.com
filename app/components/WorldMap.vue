@@ -281,6 +281,10 @@ const seriesData = computed(() => {
     .filter((item: NodeSeriesItem | null) => item !== null);
 });
 
+// Width/height ratio of the map within boundingCoords
+const MAP_ASPECT = 360 / 145;
+const containerSize = ref({ width: 1, height: 1 });
+
 // Chart configuration
 const chartOptions = computed(() => {
   if (!seriesData.value.length) return null;
@@ -324,10 +328,10 @@ const chartOptions = computed(() => {
       // Mobile scrolls natively instead of panning
       roam: !isMobile.value,
       scaleLimit: { min: 1, max: 10 },
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
+      // Fit inside the container without stretching: fill the limiting side, center the other
+      ...(containerSize.value.width / containerSize.value.height > MAP_ASPECT
+        ? { top: 0, bottom: 0, left: "center" }
+        : { left: 0, right: 0, top: "middle" }),
       aspectScale: 1,
       boundingCoords: [
         [-180, 85],
@@ -422,6 +426,7 @@ const handleResize = () => {
   const container = chartRef.value.chart.getDom().parentElement;
   const width = is4K.value ? window.innerWidth : container?.clientWidth || window.innerWidth;
   const height = is4K.value ? window.innerHeight : container?.clientHeight || window.innerHeight;
+  containerSize.value = { width, height };
   chartRef.value.chart.resize({ width, height });
 };
 
