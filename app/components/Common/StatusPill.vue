@@ -40,8 +40,10 @@ const tone = computed(() => getStatusTone(statusString.value));
   white-space: nowrap;
 }
 
-/* Running and completed share the green wash; the mark inside separates them. */
-.status-pill.live,
+.status-pill.live {
+  background: rgba($info, 0.12);
+  color: $info;
+}
 .status-pill.ok {
   background: rgba($success, 0.14);
   color: color.adjust($success, $lightness: -16%);
@@ -62,7 +64,9 @@ const tone = computed(() => getStatusTone(statusString.value));
 html.dark-mode .status-pill.warn {
   color: $warning;
 }
-html.dark-mode .status-pill.live,
+html.dark-mode .status-pill.live {
+  color: color.adjust($info, $lightness: 20%);
+}
 html.dark-mode .status-pill.ok {
   color: $success;
 }

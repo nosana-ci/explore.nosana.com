@@ -1459,7 +1459,8 @@ button[disabled][data-tooltip] {
    ========================================================================== */
 
 :root {
-  --status-success-color: #{$success}; // Green: running/online, and completed
+  --status-info-color: #{$info}; // Blue: running/active/online
+  --status-success-color: #{$success}; // Green: completed
   --status-warning-color: #{$warning}; // Orange: queued/starting/pending
   --status-danger-color: #{$danger}; // Red: failed/error
   --status-dark-color: #{$status-neutral}; // Grey: stopped/inactive/offline
@@ -1511,6 +1512,15 @@ button[disabled][data-tooltip] {
     }
   }
   
+  &.is-info {
+    color: var(--status-info-color) !important;
+    border-color: var(--status-info-color) !important;
+
+    svg {
+      color: var(--status-info-color) !important;
+    }
+  }
+
   &.is-warning {
     color: var(--status-warning-color) !important;
     border-color: var(--status-warning-color) !important;

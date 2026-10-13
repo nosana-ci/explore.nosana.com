@@ -5,8 +5,7 @@
     :style="{ '--smark-size': `${size}px` }"
     :title="label"
   >
-    <!-- Settled states get a glyph, ongoing ones a dot, so green can mean both
-         "serving" and "finished" without the two reading alike. -->
+    <!-- Settled states get a glyph, ongoing ones a dot. -->
     <svg
       v-if="tone === 'ok'"
       viewBox="0 0 24 24"
@@ -83,9 +82,9 @@ withDefaults(
   background: currentColor;
 }
 
-/* One green for both: a running dot and a completed checkmark are the same
-   colour, and the shape is the only thing that differs. */
-.smark.live,
+.smark.live {
+  color: $info;
+}
 .smark.ok {
   color: $success;
 }

@@ -336,6 +336,7 @@ watch(() => props.loadingJobs, (isLoading, wasLoading) => {
 
 // Ensure status icons have proper colors even in small mode
 :deep(.status-icon-wrap.status-tag) {
+  &.is-info, &.is-info svg { color: $info !important; }
   &.is-success, &.is-success svg { color: $success !important; }
   &.is-warning, &.is-warning svg { color: $warning !important; }
   &.is-danger, &.is-danger svg { color: $danger !important; }

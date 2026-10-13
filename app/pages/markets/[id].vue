@@ -348,7 +348,7 @@ html.dark-mode .hosts-card {
   flex-basis: 0;
   min-width: 0.4rem;
 
-  &.live { background: $success; }
+  &.live { background: $info; }
   &.warn { background: $warning; }
   &.neutral { background: $status-neutral; }
 }
