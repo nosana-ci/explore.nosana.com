@@ -45,7 +45,7 @@ const address: Ref<string> = ref(params.id as string);
   font-size: 1.1rem;
   max-width: 520px;
   margin-bottom: 1rem;
-  color: var(--color-text-light);
+  color: $text-muted;
 }
 
 .account-address {

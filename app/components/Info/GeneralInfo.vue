@@ -141,7 +141,7 @@ defineExpose({
   .quick-detail-label {
     font-size: 0.7rem; // Slightly smaller for conciseness
     font-weight: 600;
-    color: #7a7a7a;
+    color: $text-muted;
     text-transform: uppercase;
     margin-bottom: 0.1rem; // Small space
   }
@@ -149,11 +149,15 @@ defineExpose({
   .quick-detail-value {
     font-size: 0.85rem; // Slightly smaller
     font-weight: 500;
-    color: #363636;
+    color: $grey-darker;
     word-break: break-word;
 
+    html.dark-mode & {
+      color: $white;
+    }
+
     .icon-text {
-      color: #363636;
+      color: inherit;
     }
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Search Box -->
-    <div class="box has-background-white-ter">
+    <div class="box">
       <Search />
     </div>
 
@@ -76,7 +76,7 @@ const activeHosts = computed(() => {
   min-height: 500px;
   margin-bottom: 0;
   overflow: visible;
-  border-radius: 8px;
+  border-radius: 14px;
   position: relative;
 
   @media screen and (max-width: 1024px) {
@@ -117,12 +117,13 @@ const activeHosts = computed(() => {
 }
 
 .stats-box {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
+  background: rgba($white, 0.95);
+  border: 1px solid $border-soft;
+  border-radius: 14px;
   padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: $panel-shadow;
   backdrop-filter: blur(10px);
 
   @media screen and (max-width: 768px) {
@@ -138,7 +139,7 @@ const activeHosts = computed(() => {
 .rocket-icon {
   width: 28px;
   height: 28px;
-  fill: #10e80c;
+  fill: $secondary;
 
   @media screen and (max-width: 768px) {
     width: 24px;
@@ -149,14 +150,16 @@ const activeHosts = computed(() => {
 // Dark mode styles
 html.dark-mode {
   .stats-box {
-    background: rgba(26, 26, 26, 0.95);
+    background: rgba($black-ter, 0.95);
+    border-color: rgba($white, 0.1);
+    box-shadow: $panel-shadow-dark;
     
     .has-text-grey {
-      color: #b0b0b0 !important;
+      color: $grey-light !important;
     }
     
     .has-text-weight-bold {
-      color: #ffffff !important;
+      color: $white !important;
     }
   }
 }

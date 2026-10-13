@@ -147,7 +147,7 @@
         
         &::placeholder {
           font-size: 0.85em;
-          color: #999;
+          color: $text-muted;
         }
       }
     }

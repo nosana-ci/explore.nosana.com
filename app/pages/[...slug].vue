@@ -45,6 +45,6 @@ function handleError() {
   font-size: 1rem;
   max-width: 500px;
   margin-bottom: 2rem;
-  color: var(--color-text-light);
+  color: $text-muted;
 }
 </style>

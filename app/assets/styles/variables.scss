@@ -2,27 +2,28 @@
 @use "bulma-defaults" as *;
 @forward "bulma-defaults";
 
-$family-sans-serif: 'Outfit', sans-serif;
+$family-sans-serif: "Outfit", sans-serif;
 $primary: black;
-$secondary: #10E80C;
-$info: #0066FF;
-$success: #04DE00;
-$warning: #FFB800;
+$secondary: #10e80c;
+$info: #0066ff;
+$success: $secondary;
+$secondary-text: #0a8a08;
+$warning: #ffb800;
 $custom-colors: (
-  'secondary': $secondary,
+  "secondary": $secondary,
 );
 
 $text: #000;
-$text-light: #999999;
+$text-light: hsl(220, 10%, 44%);
+$text-muted: var(--app-text-muted, #{$grey});
 $text-dark: #666666;
 $body-size: 14px !default;
 $link: $secondary;
 $link-hover: color.adjust($link, $lightness: -10%);
-$title-family: 'Space Grotesk', sans-serif;
-$subtitle-family: 'Space Grotesk', sans-serif;
-$body-background-color: $white-bis;
+$title-family: "Space Grotesk", sans-serif;
+$subtitle-family: "Space Grotesk", sans-serif;
+$body-background-color: $white;
 $body-background-color-dark: #181818;
-
 
 $box-background-color: $white;
 $box-background-color-dark: $black-ter;
@@ -49,7 +50,18 @@ $menu-item-color: $text-dark;
 $menu-item-hover-background-color: $grey-lightest;
 $radius-small: 4px;
 
+$status-neutral: $grey;
+
 $box-shadow: none;
+$panel-shadow:
+  0 1px 3px rgba($black, 0.06),
+  0 14px 38px -6px rgba($black, 0.14);
+$panel-shadow-dark:
+  0 1px 3px rgba($black, 0.4),
+  0 16px 40px -8px rgba($black, 0.6);
+$surface-hover: hsl(220, 27%, 97.5%);
+$surface-sunken: hsl(220, 27%, 96.5%);
+$surface-track: hsl(220, 24%, 93%);
 $box-padding: 1.6rem;
 $button-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
@@ -58,12 +70,19 @@ $tabs-link-active-color: $primary;
 $tabs-link-active-border-bottom-color: $primary;
 $tabs-link-color: $grey;
 $input-icon-active-color: $secondary;
-// $input-background-color: $white;
-// $input-border-color: $white-ter;
 $input-shadow: none;
+
+$modal-card-head-padding: 1.15rem 1.5rem;
+$modal-card-body-padding: 1.5rem;
+$input-radius: 10px;
+$input-control-height: 2.75em;
 $input-focus-box-shadow-color: rgba($secondary, 0.25);
 $label-weight: 400;
 $label-color: $grey;
+
+$code-surface: #0d1117;
+$code-surface-panel: #161b22;
+$code-surface-border: #21262d;
 
 $code: $danger;
 $code-background: $background;

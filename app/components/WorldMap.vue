@@ -310,7 +310,7 @@ const chartOptions = computed(() => {
   };
 
   return {
-    backgroundColor: darkMode.value ? "#121212" : "#f9f9f9",
+    backgroundColor: darkMode.value ? "#121212" : "#f8f9fc",
     tooltip: {
       trigger: "item",
       formatter: tooltipFormatter,
@@ -340,7 +340,7 @@ const chartOptions = computed(() => {
         formatter: tooltipFormatter,
       },
       itemStyle: {
-        areaColor: darkMode.value ? "#2c2c2c" : "#d4d4d4",
+        areaColor: darkMode.value ? "#2c2c2c" : "#c9cfd9",
         borderColor: darkMode.value ? "#3a3a3a" : "#ffffff",
       },
       emphasis: {
@@ -529,7 +529,9 @@ const handleMouseOut = (params: any) => {
 
 .box {
   background: transparent !important;
-  box-shadow: none;
+  /* The outer box on the page draws the edge */
+  border: 0 !important;
+  box-shadow: none !important;
   height: 100%;
   width: 100%;
   display: flex;

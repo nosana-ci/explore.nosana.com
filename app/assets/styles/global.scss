@@ -1,6 +1,7 @@
 @use "sass:color";
 @use "sass:map";
 @use "variables" as *;
+@use "mixins" as *;
 @use "dark-mode" as *;
 @use "bulma/sass" as bulma with (
   $family-sans-serif: $family-sans-serif,
@@ -40,6 +41,9 @@
   $tabs-link-active-border-bottom-color: $tabs-link-active-border-bottom-color,
   $tabs-link-color: $tabs-link-color,
   $input-shadow: $input-shadow,
+  $input-radius: $input-radius,
+  $modal-card-head-padding: $modal-card-head-padding,
+  $modal-card-body-padding: $modal-card-body-padding,
   $label-weight: $label-weight,
   $label-color: $label-color,
   $black: $black,
@@ -56,9 +60,30 @@
   $white: $white
 );
 
+/* Theme-dependent stops, shared with the Deploy UI. Bulma's light theme leaves
+   its hairlines at 86% / 93%, which on a white panel is barely a line. Both
+   halves sit on equally specific selectors so neither wins by source order. */
+html.dark-mode {
+  --app-text-muted: #{$grey-light};
+}
+
+html:not(.dark-mode) {
+  --app-text-muted: #{$grey};
+  --bulma-border-l: 82%;
+  --bulma-border-weak-l: 89%;
+  --bulma-text-weak-l: 41%;
+  --bulma-hr-background-color: var(--bulma-border-weak);
+
+  .input,
+  .textarea,
+  .select,
+  .control {
+    --bulma-input-placeholder-color: #{hsl(220, 10%, 50%)};
+  }
+}
 
 .tag.is-success {
-  background-color: $white !important;
+  background-color: $success !important;
 }
 
 // Table column alignment for consistent two-column tables
@@ -115,7 +140,7 @@
     &:focus-visible,
     &:active,
     &:focus:not(:active) {
-      border-color: #dbdbdb !important;
+      border-color: $border-soft !important;
       border-width: 1px !important;
       background-color: inherit;
     }
@@ -212,7 +237,7 @@
 .dropdown-menu {
   .dropdown-content {
     background: $white;
-    border: 1px solid $grey-lighter;
+    border: 1px solid $border-soft;
     border-radius: $radius;
     box-shadow: $box-shadow;
     padding: 0.25rem;
@@ -236,7 +261,7 @@
     }
     
     &:hover {
-      background: $grey-lightest;
+      background: $surface-hover;
       color: $text;
     }
   }
@@ -250,9 +275,9 @@
 // Action button styling (matching dropdown-item style)
 .action-btn,
 .group-action-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.9rem;
   border-radius: $radius-small;
-  border: 1px solid $grey-lighter;
+  border: 1px solid $border-soft;
   background: $white;
   color: $text-dark;
   cursor: pointer;
@@ -277,8 +302,8 @@
   }
 
   &:hover:not(:disabled) {
-    background: $grey-lightest;
-    border-color: $grey-light;
+    background: $surface-hover;
+    border-color: $border-strong;
   }
 
   &:disabled {
@@ -487,7 +512,7 @@
 // Tab button styling (used for navigation tabs and toggle buttons)
 .tab-button {
   background: $white;
-  border: 1px solid $grey-lighter;
+  border: 1px solid $border-soft;
   color: $text-dark;
   padding: 0.5rem 1rem;
   border-radius: $radius;
@@ -518,7 +543,7 @@
   .icon:last-child { margin-left: 0.5rem; }
 
   &:hover {
-    background: $grey-lightest;
+    background: $surface-hover;
   }
 
   &.is-active {
@@ -549,6 +574,123 @@
   }
 }
 
+/* Segmented control for page-level tabs, shared with the Deploy UI's job and
+   deployment pages. */
+.dep-tabs {
+  display: inline-flex;
+  gap: 3px;
+  padding: 5px;
+  margin: 1.75rem 0 0.25rem;
+  border-radius: 13px;
+  /* Sits at canvas level: the inset hairline does the containing. */
+  background: $body-background-color;
+  box-shadow: inset 0 0 0 1px $border-soft;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.dep-tab {
+  font-family: $title-family;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: $grey-dark;
+  border: 0;
+  background: none;
+  padding: 0.6rem 1.35rem;
+  border-radius: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    color: $text;
+  }
+
+  &.is-active {
+    background: $secondary;
+    color: #05230a;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba($black, 0.12);
+  }
+}
+
+html.dark-mode {
+  .dep-tabs {
+    background: rgba($white, 0.08);
+    box-shadow: none;
+  }
+
+  .dep-tab {
+    color: $grey-light;
+
+    &:hover {
+      color: $white;
+    }
+
+    &.is-active {
+      background: $secondary;
+      color: #05230a;
+      box-shadow: 0 1px 3px rgba($black, 0.5);
+    }
+  }
+}
+
+/* Small pill segmented control, for in-panel filters. */
+.seg-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  background: $white-ter;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+  box-shadow: inset 0 0 0 1px $border-soft;
+
+  button {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: $grey-dark;
+    border: 0;
+    background: none;
+    padding: 5px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
+
+    &:hover {
+      color: $text;
+    }
+
+    &.is-active {
+      background: $white;
+      color: $text;
+      box-shadow: 0 1px 2px rgba($black, 0.12);
+    }
+  }
+}
+
+html.dark-mode .seg-tabs {
+  background: rgba($white, 0.06);
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+
+  button {
+    color: $grey-light;
+
+    &:hover {
+      color: $white;
+    }
+
+    &.is-active {
+      background: rgba($white, 0.16);
+      color: $white;
+      box-shadow: 0 1px 2px rgba($black, 0.4);
+    }
+  }
+}
+
 .table.is-narrow td,
 .table.is-narrow th {
   line-height: 1;
@@ -556,6 +698,14 @@
 
 .box {
   position: relative;
+  border: 1px solid $border-soft;
+  box-shadow: $panel-shadow;
+}
+
+/* A soft panel for content sections that sit directly on the canvas. */
+.section-card {
+  @include soft-panel;
+  color: $text;
 }
 
 .menu {
@@ -704,6 +854,11 @@
   background-color: $body-background-color !important;
 }
 
+// Light mode: the footer sits directly on the page background.
+.footer {
+  background-color: transparent;
+}
+
 .dark-mode {
   .sidebar {
     box-shadow: 0px 6px 40px 0px rgba(255, 255, 255, 0.02) !important;
@@ -785,11 +940,11 @@
     background-color: $black-bis;
 
     thead th {
-      color: $white;
+      color: $grey-light;
     }
     td,
     th {
-      border-color: $grey-dark;
+      border-color: rgba(255, 255, 255, 0.08);
       color: $white;
 
       strong {
@@ -800,7 +955,9 @@
       tbody {
         tr:not(.is-selected) {
           &:hover {
-            background-color: $black-ter !important;
+            background-color: rgba(16, 232, 12, 0.08) !important;
+            outline: 1px solid $secondary;
+            outline-offset: -1px;
           }
         }
       }
@@ -809,7 +966,7 @@
       tbody {
         tr:not(.is-selected) {
           &:nth-child(even) {
-            background-color: color.adjust($black-ter, $lightness: -3%);
+            background-color: transparent;
           }
         }
       }
@@ -870,10 +1027,18 @@
   }
 
   .button:not(.light-mode) {
-    &.is-dark {
-      &.is-outlined {
-        color: $light;
+    &.is-dark:not(.is-outlined) {
+      background-color: $white;
+      color: $black;
+      border-color: transparent;
+
+      &:hover {
+        background-color: $white-ter;
+        color: $black;
       }
+    }
+    &.is-dark.is-outlined {
+      color: $light;
     }
     &.is-text {
       color: $white;
@@ -941,13 +1106,13 @@
     }
 
     a {
-      color: $grey;
+      color: $grey-light;
       border-bottom-width: 3px;
       border-bottom-color: transparent;
       margin-bottom: -3px;
 
       &:hover {
-        color: $grey-light;
+        color: $white;
         border-bottom-color: $grey;
         background-color: $black-ter;
       }
@@ -1035,6 +1200,10 @@
   overflow: visible; /* let bubbles extend over the header edge */
   position: relative;
   z-index: auto !important; /* avoid creating stacking context above tooltips */
+  border-bottom: 1px solid $border-soft;
+}
+.modal-card-head + .modal-card-body {
+  padding-top: 1.5rem;
 }
 .modal-card-body {
   position: relative; /* create stacking context above header */
@@ -1079,7 +1248,7 @@ button[disabled][data-tooltip] {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 1px solid #e0e0e0;
+  border: 1px solid $border-soft;
   margin-right: 10px;
   vertical-align: middle;
 }
@@ -1120,7 +1289,7 @@ button[disabled][data-tooltip] {
     }
 
     &:hover {
-      background-color: #f5f5f5;
+      background-color: $surface-hover;
     }
   }
 
@@ -1164,7 +1333,7 @@ button[disabled][data-tooltip] {
     text-align: left;
     text-align-last: left;
     border-radius: 4px;
-    border: 1px solid $grey-lighter;
+    border: 1px solid $border-soft;
     outline: none !important;
     box-shadow: none !important;
     padding-left: 12px;
@@ -1175,7 +1344,7 @@ button[disabled][data-tooltip] {
     
     option {
       text-align: left;
-      border: 1px solid $grey-lighter;
+      border: 1px solid $border-soft;
       border-radius: 4px;
       margin: 2px;
       padding: 4px 8px;
@@ -1256,7 +1425,7 @@ button[disabled][data-tooltip] {
   transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: $surface-hover;
   }
 }
 
@@ -1289,13 +1458,44 @@ button[disabled][data-tooltip] {
    Global Status Colors and Icons
    ========================================================================== */
 
-/* Status color mapping to ensure consistency across all components */
 :root {
-  --status-success-color: #{$success}; // Green for completed/success
-  --status-info-color: #{$info}; // Blue for running/pending  
-  --status-warning-color: #{$warning}; // Orange for queued
-  --status-danger-color: #{$danger}; // Red for failed/error
-  --status-dark-color: #{$dark}; // Gray for stopped/default
+  --status-success-color: #{$success}; // Green: running/online, and completed
+  --status-warning-color: #{$warning}; // Orange: queued/starting/pending
+  --status-danger-color: #{$danger}; // Red: failed/error
+  --status-dark-color: #{$status-neutral}; // Grey: stopped/inactive/offline
+}
+
+.input,
+.textarea {
+  --bulma-control-height: #{$input-control-height};
+  padding-inline: calc(1em - 1px);
+  border-color: $grey-light;
+
+  &:hover:not(:focus) {
+    border-color: $grey;
+  }
+}
+
+/* Field icons are sized from the input height, and read it off .control. */
+.control.has-icons-left,
+.control.has-icons-right {
+  --bulma-input-height: #{$input-control-height};
+}
+
+/* Dialog close control: a borderless icon button instead of Bulma's filled
+   circle. */
+.modal-card-head .delete {
+  --bulma-delete-dimensions: 30px;
+  --bulma-delete-color: currentColor;
+  border-radius: 8px;
+  background-color: transparent;
+  color: $text-muted;
+
+  &:hover,
+  &:focus-visible {
+    background-color: $white-ter;
+    color: $secondary;
+  }
 }
 
 /* Global status tag styling with consistent colors */
@@ -1308,15 +1508,6 @@ button[disabled][data-tooltip] {
     
     svg {
       color: var(--status-success-color) !important;
-    }
-  }
-  
-  &.is-info {
-    color: var(--status-info-color) !important;
-    border-color: var(--status-info-color) !important;
-    
-    svg {
-      color: var(--status-info-color) !important;
     }
   }
   
@@ -1391,7 +1582,7 @@ button[disabled][data-tooltip] {
 
 /* Global info icon styling for tooltips */
 .icon.has-tooltip-arrow {
-  color: #7a7a7a;
+  color: $text-muted;
   cursor: default;
   vertical-align: middle;
   margin-left: 0.25rem;
@@ -1399,7 +1590,7 @@ button[disabled][data-tooltip] {
   border-bottom: none !important;
   
   &:hover {
-    color: #363636;
+    color: $text;
     text-decoration: none !important;
     border-bottom: none !important;
   }
@@ -1438,10 +1629,14 @@ button[disabled][data-tooltip] {
 
 /* Shared header separator for top sections (deployments, jobs, etc.) */
 .deployment-header {
-  border-bottom: 1px solid $grey-lighter;
+  border-bottom: 1px solid $border-soft;
 }
 
 html.dark-mode .deployment-header {
+  border-bottom-color: $grey-dark;
+}
+
+html.dark-mode .modal-card-head {
   border-bottom-color: $grey-dark;
 }
 
@@ -1483,8 +1678,7 @@ html.dark-mode .deployment-header {
 }
 
 /* Ensure SMIL animations start immediately + CSS fallback for instant start */
-.tag.status-tag.is-warning .status-icon-wrap svg path:nth-child(2),
-.tag.status-tag.is-info .status-icon-wrap svg path:nth-child(2) {
+.tag.status-tag.is-warning .status-icon-wrap svg path:nth-child(2) {
   /* CSS animation as fallback - will be overridden by SMIL if working */
   animation: statusSpinFallback 4s linear infinite;
   transform-origin: 8.95px 8.85px;
@@ -1496,14 +1690,12 @@ html.dark-mode .deployment-header {
 }
 
 /* Force SMIL animations to restart immediately when component mounts */
-.tag.status-tag.is-warning .status-icon-wrap svg,
-.tag.status-tag.is-info .status-icon-wrap svg {
+.tag.status-tag.is-warning .status-icon-wrap svg {
   /* Force browser to recalculate animations */
   animation: none;
 }
 
-.tag.status-tag.is-warning .status-icon-wrap svg *,
-.tag.status-tag.is-info .status-icon-wrap svg * {
+.tag.status-tag.is-warning .status-icon-wrap svg * {
   /* Ensure SMIL animations are not paused */
   animation-play-state: running !important;
 }
@@ -1512,47 +1704,17 @@ html.dark-mode .deployment-header {
    JSON Editor Container Styling (Consistent across all uses)
    ========================================================================== */
 
-/* Global class for JSON editor containers to ensure consistent styling */
+/* The editor paints its own surface (see Common/JsonEditor.vue). */
 .json-editor-container {
-  background-color: $grey-lightest !important;
-  border-radius: 4px;
+  border-radius: 10px;
   padding: 0;
   margin-top: 0.2rem;
+  overflow: hidden;
   position: relative; /* For copy button positioning */
-  
+
   .json-editor {
     min-height: 300px;
-    border: none;
-    border-radius: 4px;
-    background-color: $grey-lightest !important;
-    
-    :deep(.jse-main) {
-      border: none;
-      background-color: $grey-lightest !important;
-    }
-    
-    :deep(.jse-contents) {
-      border-radius: 4px;
-      background-color: $grey-lightest !important;
-    }
-    
-    :deep(.jse-text-mode) {
-      background-color: $grey-lightest !important;
-    }
-    
-    :deep(.cm-editor) {
-      background-color: $grey-lightest !important;
-    }
-    
-    :deep(.cm-focused) {
-      background-color: $grey-lightest !important;
-    }
   }
-}
-
-/* Override any box backgrounds when containing JSON editor */
-.box .json-editor-container {
-  background-color: $grey-lightest !important;
 }
 
 /* ==========================================================================
@@ -1563,7 +1725,7 @@ html.dark-mode .deployment-header {
 .category-tag {
   background-color: $grey-lightest !important;
   color: $text !important;
-  border: 1px solid $grey-lighter !important;
+  border: 1px solid $border-soft !important;
 }
 /* ==========================================================================
    Back Arrow Icon Styling (Global for all pages)
@@ -1639,4 +1801,43 @@ html.dark-mode .deployment-header {
 .z-index-2 {
   z-index: 2;
 }
+}
+
+/* =========================================================================
+   App-wide data tables, shared with the Deploy UI: uppercase muted headers,
+   hairline row dividers, roomy cells and no zebra striping.
+   ========================================================================= */
+.table {
+  thead th {
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    color: $text-muted;
+    border-bottom: 1px solid $border;
+    padding: 0.85rem 1.1rem;
+    vertical-align: middle;
+  }
+
+  td {
+    border-bottom: 1px solid $border;
+    padding: 0.85rem 1.1rem;
+    vertical-align: middle;
+  }
+
+  /* flat surface: the hairline dividers do the separating */
+  &.is-striped tbody tr:not(.is-selected):nth-child(even) {
+    background-color: transparent;
+  }
+
+  /* hoverable rows get the brand green outline */
+  &.is-hoverable tbody tr:not(.is-selected):hover {
+    background-color: rgba(16, 232, 12, 0.05);
+    outline: 1px solid $secondary;
+    outline-offset: -1px;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
 }

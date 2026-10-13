@@ -81,161 +81,34 @@
             </div>
           </div>
 
-          <div class="card">
-            <div class="card-content p-0">
-              <div class="table-container">
-                <table class="table is-fullwidth">
-                <thead>
-                  <tr>
-                    <th style="width: 200px;">Status</th>
-                    <th style="width: 100px;">Count</th>
-                    <th class="is-hidden-mobile"></th>
-                    <th style="width: 120px;"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- All Nodes -->
-                  <tr>
-                    <td>
-                      <span class="icon has-text-success">
-                        <i class="fas fa-users"></i>
-                      </span>
-                      <span class="has-text-weight-medium">All hosts</span>
-                    </td>
-                    <td>{{ totalNodes }}</td>
-                    <td class="is-hidden-mobile">
-                      <progress class="progress is-success is-small" :value="totalNodes" :max="totalNodes"></progress>
-                    </td>
-                    <td>
-                      <button class="button is-small" @click="toggleAllNodes" :disabled="!totalNodes">
-                        {{ showAllNodes ? 'Hide' : 'Show' }}
-                      </button>
-                    </td>
-                  </tr>
-                  <tr v-show="showAllNodes && totalNodes">
-                    <td colspan="4" class="has-background-white-ter">
-                      <div class="p-3">
-                        <ol class="ml-4">
-                          <li v-for="node in allNodes" :key="String(node)">
-                            <nuxt-link :to="`/hosts/${node}`" class="is-family-monospace">
-                              {{ node }}
-                            </nuxt-link>
-                          </li>
-                        </ol>
-                      </div>
-                    </td>
-                  </tr>
+          <div class="hosts-card">
+            <div class="hosts-summary p-4">
+              <!-- Running, queued and idle are disjoint, so together they fill the bar. -->
+              <div class="hosts-bar mb-3">
+                <span v-for="seg in hostSegments" v-show="seg.count" :key="seg.key" class="hosts-bar-seg"
+                  :class="seg.tone" :style="{ flexGrow: seg.count }" :title="`${seg.label}: ${seg.count}`"></span>
+              </div>
 
-                  <!-- Running Nodes -->
-                  <tr>
-                    <td>
-                      <span class="icon has-text-info">
-                        <i class="fas fa-play"></i>
-                      </span>
-                      <span class="has-text-weight-medium">Running</span>
-                    </td>
-                    <td>{{ runningNodes.length }}</td>
-                    <td class="is-hidden-mobile">
-                      <progress class="progress is-info is-small" :value="runningNodes.length"
-                        :max="totalNodes"></progress>
-                    </td>
-                    <td>
-                      <button class="button is-small" @click="toggleRunningNodes" :disabled="!runningNodes.length">
-                        {{ showRunningNodes ? 'Hide' : 'Show' }}
-                      </button>
-                    </td>
-                  </tr>
-                  <tr v-show="showRunningNodes && runningNodes.length">
-                    <td colspan="4" class="has-background-white-ter">
-                      <div class="p-3">
-                        <ol class="ml-4">
-                          <li v-for="node in runningNodes" :key="String(node)">
-                            <nuxt-link :to="`/hosts/${node}`" class="is-family-monospace">
-                              {{ node }}
-                            </nuxt-link>
-                          </li>
-                        </ol>
-                      </div>
-                    </td>
-                  </tr>
+              <div class="seg-tabs">
+                <button :class="{ 'is-active': hostFilter === 'all' }" @click="hostFilter = 'all'">
+                  All <span class="has-text-grey ml-1">{{ totalNodes }}</span>
+                </button>
+                <button v-for="seg in hostSegments" :key="seg.key" class="is-inline-flex is-align-items-center"
+                  :class="{ 'is-active': hostFilter === seg.key }" @click="hostFilter = seg.key">
+                  <StatusMark :tone="seg.tone" :size="10" class="mr-2" />
+                  {{ seg.label }} <span class="has-text-grey ml-1">{{ seg.count }}</span>
+                </button>
+              </div>
+            </div>
 
-                  <!-- Queued Nodes -->
-                  <tr>
-                    <td>
-                      <span class="icon has-text-warning">
-                        <i class="fas fa-clock"></i>
-                      </span>
-                      <span class="has-text-weight-medium">Queued</span>
-                    </td>
-                    <td>
-                      <template v-if="market?.queueType === 0">
-                        0
-                      </template>
-                      <template v-else>
-                        {{ queuedNodes.length }}
-                      </template>
-                    </td>
-                    <td class="is-hidden-mobile">
-                      <template v-if="market?.queueType === 1">
-                        <progress class="progress is-warning is-small" :value="queuedNodes.length"
-                          :max="totalNodes"></progress>
-                      </template>
-                    </td>
-                    <td>
-                      <button class="button is-small" @click="toggleQueuedNodes" :disabled="!queuedNodes.length">
-                        {{ showQueuedNodes ? 'Hide' : 'Show' }}
-                      </button>
-                    </td>
-                  </tr>
-                  <tr v-show="showQueuedNodes && queuedNodes.length">
-                    <td colspan="4" class="has-background-white-ter">
-                      <div class="p-3">
-                        <ol class="ml-4">
-                          <li v-for="node in queuedNodes" :key="String(node)">
-                            <nuxt-link :to="`/hosts/${node}`" class="is-family-monospace">
-                              {{ node }}
-                            </nuxt-link>
-                          </li>
-                        </ol>
-                      </div>
-                    </td>
-                  </tr>
-
-                  <!-- Access to join Nodes -->
-                  <tr>
-                    <td>
-                      <span class="icon">
-                        <i class="fas fa-key"></i>
-                      </span>
-                      <span class="has-text-weight-medium">Access to join</span>
-                    </td>
-                    <td>{{ availableNodesWithAccess.length }}</td>
-                    <td class="is-hidden-mobile">
-                      <progress class="progress is-dark is-small" :value="availableNodesWithAccess.length"
-                        :max="totalNodes"></progress>
-                    </td>
-                    <td>
-                      <button class="button is-small" :disabled="!availableNodesWithAccess.length"
-                        @click="toggleAccessNodes">
-                        {{ showAccessNodes ? 'Hide' : 'Show' }}
-                      </button>
-                    </td>
-                  </tr>
-                  <tr v-show="showAccessNodes && availableNodesWithAccess.length">
-                    <td colspan="4" class="has-background-white-ter">
-                      <div class="p-3">
-                        <ol class="ml-4">
-                          <li v-for="node in availableNodesWithAccess" :key="String(node)">
-                            <nuxt-link :to="`/hosts/${node}`" class="is-family-monospace">
-                              {{ node }}
-                            </nuxt-link>
-                          </li>
-                        </ol>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="hosts-list">
+              <nuxt-link v-for="host in filteredHosts" :key="host.address" :to="`/hosts/${host.address}`"
+                class="hosts-row is-flex is-align-items-center px-4 py-2">
+                <StatusMark :tone="host.tone" :size="10" :label="host.label" class="mr-3" />
+                <span class="is-family-monospace address">{{ host.address }}</span>
+              </nuxt-link>
+              <div v-if="!filteredHosts.length" class="p-4 has-text-grey">
+                {{ loadingRunningNodes || loadingNodesWithAccess ? 'Loading hosts...' : 'No hosts' }}
               </div>
             </div>
           </div>
@@ -256,6 +129,8 @@
 import { type Market } from '@nosana/sdk'
 import DeploymentList from "~/components/List/DeploymentList.vue";
 import CurrentMarketPrice from "~/components/Market/CurrentPrice.vue";
+import StatusMark from "~/components/Common/StatusMark.vue";
+import type { StatusTone } from "~/composables/useStatus";
 import type { Ref } from 'vue';
 
 // Define the interface for the market data
@@ -326,37 +201,6 @@ const getMarket = async () => {
 
 getMarket()
 
-const showRunningNodes = ref(false)
-const showQueuedNodes = ref(false)
-const showAccessNodes = ref(false)
-
-const toggleRunningNodes = () => {
-  showRunningNodes.value = !showRunningNodes.value
-  if (showRunningNodes.value) {
-    showAllNodes.value = false
-    showQueuedNodes.value = false
-    showAccessNodes.value = false
-  }
-}
-
-const toggleQueuedNodes = () => {
-  showQueuedNodes.value = !showQueuedNodes.value
-  if (showQueuedNodes.value) {
-    showAllNodes.value = false
-    showRunningNodes.value = false
-    showAccessNodes.value = false
-  }
-}
-
-const toggleAccessNodes = () => {
-  showAccessNodes.value = !showAccessNodes.value
-  if (showAccessNodes.value) {
-    showAllNodes.value = false
-    showRunningNodes.value = false
-    showQueuedNodes.value = false
-  }
-}
-
 interface NodeLike {
   toString(): string;
 }
@@ -407,15 +251,6 @@ const totalNodes = computed(() => {
   return allNodesSet.size
 })
 
-const allNodes = computed(() => {
-  // Combine all nodes and ensure they're strings
-  return [...new Set([
-    ...runningNodes.value,
-    ...queuedNodes.value,
-    ...nodesWithAccess.value.map((node: any) => node.toString())
-  ])].sort()
-})
-
 const availableNodesWithAccess = computed(() => {
   const runningNodeSet = new Set(runningNodes.value)
   const queuedNodeSet = new Set(queuedNodes.value.map((node: NodeLike | string) =>
@@ -428,16 +263,23 @@ const availableNodesWithAccess = computed(() => {
   })
 })
 
-const showAllNodes = ref(false)
+type HostFilter = 'all' | 'running' | 'queued' | 'idle'
+const hostFilter = ref<HostFilter>('all')
 
-const toggleAllNodes = () => {
-  showAllNodes.value = !showAllNodes.value
-  if (showAllNodes.value) {
-    showRunningNodes.value = false
-    showQueuedNodes.value = false
-    showAccessNodes.value = false
-  }
-}
+// Disjoint host groups; queued only exists on markets that queue nodes.
+const hostSegments = computed(() => [
+  { key: 'running' as const, label: 'Running', tone: 'live' as StatusTone, hosts: runningNodes.value },
+  ...(market.value?.queueType === 1
+    ? [{ key: 'queued' as const, label: 'Queued', tone: 'warn' as StatusTone, hosts: queuedNodes.value }]
+    : []),
+  { key: 'idle' as const, label: 'Idle', tone: 'neutral' as StatusTone, hosts: availableNodesWithAccess.value.map(String) },
+].map(seg => ({ ...seg, count: seg.hosts.length })))
+
+const filteredHosts = computed(() =>
+  hostSegments.value
+    .filter(seg => hostFilter.value === 'all' || seg.key === hostFilter.value)
+    .flatMap(seg => seg.hosts.map((address: string) => ({ address, tone: seg.tone, label: seg.label })))
+)
 
 const runningNodesUrl = computed(() => `/api/jobs/running-nodes?market=${marketId.value}`)
 const {
@@ -475,5 +317,62 @@ onMounted(() => {
 <style lang="scss" scoped>
 .address {
   word-break: break-all;
+}
+
+/* Hairline container for the table inside the page's panel. */
+.hosts-card {
+  border: 1px solid $border-soft;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+html.dark-mode .hosts-card {
+  border-color: rgba($white, 0.1);
+}
+
+.hosts-summary {
+  border-bottom: 1px solid $border-soft;
+}
+
+/* Multi-segment bar; Bulma's progress only draws a single value. */
+.hosts-bar {
+  display: flex;
+  gap: 0.2rem;
+  height: $size-7;
+  border-radius: $radius-rounded;
+  overflow: hidden;
+  background: $surface-track;
+}
+
+.hosts-bar-seg {
+  flex-basis: 0;
+  min-width: 0.4rem;
+
+  &.live { background: $success; }
+  &.warn { background: $warning; }
+  &.neutral { background: $status-neutral; }
+}
+
+.hosts-list {
+  max-height: 22.5rem;
+  overflow-y: auto;
+}
+
+.hosts-row {
+  color: inherit;
+  border-bottom: 1px solid $border-soft;
+
+  &:last-child { border-bottom: 0; }
+  &:hover { background: $surface-hover; }
+}
+
+html.dark-mode {
+  .hosts-summary,
+  .hosts-row {
+    border-color: rgba($white, 0.1);
+  }
+
+  .hosts-bar { background: rgba($white, 0.08); }
+  .hosts-row:hover { background: rgba($white, 0.04); }
 }
 </style>

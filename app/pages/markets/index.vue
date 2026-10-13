@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="box has-background-white-ter">
+    <div class="box">
       <Search />
     </div>
     <div class="box">

@@ -1,0 +1,18 @@
+@use "@/assets/styles/variables.scss" as *;
+
+// The soft panel shared with the Deploy UI: a white card on the canvas, held by
+// a hairline and a shallow lift rather than a heavy border. Each caller owns
+// its own padding.
+@mixin soft-panel($radius: 14px) {
+  background: $white;
+  border: 1px solid $border-soft;
+  border-radius: $radius;
+  box-shadow: $panel-shadow;
+  overflow: hidden;
+
+  html.dark-mode & {
+    background: $black-ter;
+    border-color: rgba($white, 0.1);
+    box-shadow: $panel-shadow-dark;
+  }
+}

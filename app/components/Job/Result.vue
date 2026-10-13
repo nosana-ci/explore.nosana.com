@@ -268,10 +268,10 @@ defineExpose({
   top: 0.2rem; /* Adjusted from 0.5rem as per user feedback */
   right: 0.2rem;
   z-index: 10;
-  background-color: #ffffff !important;
-  border: 1px solid #e8e8e8 !important;
+  background-color: $white !important;
+  border: 1px solid $border-soft !important;
   padding: 0.4rem 0.6rem !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+  box-shadow: $button-shadow !important;
   line-height: 1;
 
   .icon img {
@@ -281,19 +281,18 @@ defineExpose({
   }
 
   &:hover {
-    background-color: #f5f5f5 !important;
-    border-color: #dadada !important;
+    background-color: $surface-hover !important;
+    border-color: $border-strong !important;
   }
 }
 
 html.dark-mode .fullscreen-result-button {
-  background-color: #363636 !important;
-  border-color: #4d4d4d !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+  background-color: rgba($white, 0.05) !important;
+  border-color: rgba($white, 0.12) !important;
+  box-shadow: none !important;
 
   &:hover {
-    background-color: #444444 !important;
-    border-color: #5a5a5a !important;
+    background-color: rgba($white, 0.1) !important;
   }
   .icon img {
     filter: invert(1);

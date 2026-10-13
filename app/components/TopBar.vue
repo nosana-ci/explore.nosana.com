@@ -178,7 +178,7 @@ const toggleDarkMode = () => {
 .vertical-divider {
   width: 1px;
   height: 2rem;
-  background-color: $grey;
+  background-color: $border-strong;
   flex-shrink: 0;
 }
 
@@ -198,18 +198,18 @@ const toggleDarkMode = () => {
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 500;
-  color: $grey;
+  color: $text-muted;
   transition: all 0.2s ease;
   text-decoration: none;
   
   &:hover {
     color: $text;
-    background: $grey-lightest;
+    background: $surface-hover;
   }
   
   &.is-active {
-    color: $primary;
-    background: rgba($primary, 0.08);
+    color: $text;
+    background: $menu-item-hover-background-color;
   }
 }
 
@@ -226,7 +226,7 @@ const toggleDarkMode = () => {
   transition: background 0.2s ease;
   
   &:hover {
-    background: $grey-lightest;
+    background: $surface-hover;
   }
 }
 
@@ -248,11 +248,11 @@ const toggleDarkMode = () => {
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s ease;
-  color: #6b7280;
+  color: $text-muted;
   
   &:hover {
-    background-color: #f3f4f6;
-    color: #374151;
+    background-color: $surface-hover;
+    color: $text;
   }
 }
 
@@ -318,12 +318,12 @@ const toggleDarkMode = () => {
   margin-bottom: 0.5rem;
   
   &:hover {
-    background: $grey-lightest;
+    background: $surface-hover;
   }
   
   &.is-active {
-    color: $primary;
-    background: rgba($primary, 0.08);
+    color: $text;
+    background: $menu-item-hover-background-color;
   }
 }
 
@@ -370,7 +370,7 @@ const toggleDarkMode = () => {
     
     &.is-active {
       color: $white;
-      background: rgba($primary, 0.15);
+      background: $grey-darker;
     }
   }
   
@@ -383,11 +383,9 @@ const toggleDarkMode = () => {
   }
   
   .theme-toggle {
-    color: #9ca3af;
-    
     &:hover {
-      background-color: #374151;
-      color: #d1d5db;
+      background-color: rgba($white, 0.05);
+      color: $white;
     }
   }
   
@@ -400,7 +398,7 @@ const toggleDarkMode = () => {
     
     &.is-active {
       color: $white;
-      background: rgba($primary, 0.15);
+      background: $grey-darker;
     }
   }
   

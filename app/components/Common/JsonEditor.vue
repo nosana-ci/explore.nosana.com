@@ -143,5 +143,78 @@ button[class*="repair"],
 .cm-diagnosticAction {
   display: none !important;
 }
+
+/* Editor theme shared with the Deploy UI: One Dark on the code surface in dark
+   mode, One Light on white in light mode. */
+.json-editor {
+  --jse-font-family-mono: "JetBrains Mono", monospace;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.json-editor .cm-gutters {
+  display: none !important;
+}
+.json-editor .cm-cursor {
+  border-left-color: #58a6ff;
+}
+
+/* --- DARK --- */
+.json-editor.jse-theme-dark {
+  --jse-background-color: #{$code-surface};
+  --jse-panel-background: #{$code-surface-panel};
+  --jse-panel-border: #{$code-surface-border};
+  --jse-panel-color: #c9d1d9;
+  --jse-panel-color-readonly: #6e7681;
+  --jse-main-border: #{$code-surface-border};
+  --jse-text-color: #c9d1d9;
+  --jse-value-color: #c9d1d9;
+  --jse-key-color: #e06c75;
+  --jse-value-color-string: #98c379;
+  --jse-value-color-number: #d19a66;
+  --jse-value-color-boolean: #c678dd;
+  --jse-value-color-null: #c678dd;
+  --jse-value-color-url: #56b6c2;
+  --jse-delimiter-color: #7f8896;
+  --jse-selection-background-color: rgba(88, 166, 255, 0.4);
+  --jse-selection-background-inactive-color: rgba(88, 166, 255, 0.24);
+  --jse-active-line-background-color: rgba(255, 255, 255, 0.03);
+  --jse-input-background: #{$code-surface-panel};
+  border: 1px solid $code-surface-border;
+}
+/* Paint the surface on the containers, not .cm-content: CodeMirror draws the
+   selection behind the content, so an opaque .cm-content would hide it. */
+.json-editor.jse-theme-dark .jse-text-mode,
+.json-editor.jse-theme-dark .cm-editor,
+.json-editor.jse-theme-dark .cm-scroller {
+  background: $code-surface;
+}
+.json-editor.jse-theme-dark .cm-content {
+  background: transparent;
+}
+
+/* --- LIGHT (default) --- */
+.json-editor:not(.jse-theme-dark) {
+  --jse-text-color: #1a1a1a;
+  --jse-value-color: #1a1a1a;
+  --jse-key-color: #b31d28;
+  --jse-value-color-string: #50a14f;
+  --jse-value-color-number: #986801;
+  --jse-value-color-boolean: #a626a4;
+  --jse-value-color-null: #a626a4;
+  --jse-value-color-url: #4078f2;
+  --jse-delimiter-color: #a0a1a7;
+  --jse-selection-background-color: rgba(88, 166, 255, 0.28);
+  --jse-selection-background-inactive-color: rgba(88, 166, 255, 0.18);
+  --jse-active-line-background-color: rgba(0, 0, 0, 0.03);
+  border: 1px solid $border-soft;
+}
+.json-editor:not(.jse-theme-dark) .jse-text-mode,
+.json-editor:not(.jse-theme-dark) .cm-editor,
+.json-editor:not(.jse-theme-dark) .cm-scroller {
+  background: $white;
+}
+.json-editor:not(.jse-theme-dark) .cm-content {
+  background: transparent;
+}
 </style>
 
