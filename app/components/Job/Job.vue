@@ -1,56 +1,61 @@
 <template>
-  <!-- Header Section -->
-  <div class="box is-borderless">
-    <!-- Header Section -->
-    <div class="p-5 deployment-header">
-        <div class="is-flex is-justify-content-space-between is-align-items-start">
-          <div class="header-left-section">
-            <div class="is-flex is-align-items-center mb-2">
-              <button @click="router.back()" class="button is-ghost back-button mr-4">
-                <span class="icon is-small">
-                  <ArrowUpIcon class="icon-16 transform-rotate-270 back-arrow-icon" />
-                </span>
-              </button>
-              <div class="header-title-section">
-                <p class="subtitle is-7 has-text-grey is-family-monospace mb-0">{{ props.job.address }}</p>
-                <div v-if="props.job.timeStart || jobDurationData" class="is-size-7 has-text-grey mt-1">
-                  <span v-if="props.job.timeStart && formatStartTime">
-                    Started: {{ formatStartTime(props.job.timeStart) }}
-                  </span>
-                  <span v-if="jobDurationData" class="ml-2">
-                    Duration: <SecondsFormatter :seconds="jobDurationData.actualSeconds" :showSeconds="true" />
-                  </span>
-                </div>
-              </div>
-              <StatusTag v-if="props.job" class="ml-4" 
-              :status="props.job.state === 2 && props.job.jobStatus ? (props.job.jobStatus === 'success' ? 'SUCCESS' : 'FAILED') : props.job.state" />
-            </div>
-          </div>
-          <div class="deployment-tabs">
-          <button 
-            v-for="tab in availableTabs"
-            :key="tab"
-            @click="activeTab = tab"
-            :class="{ 'is-active': activeTab === tab }"
-            class="tab-button"
-          >
-            {{ getTabLabel(tab) }}
-          </button>
-          <!-- Actions Dropdown removed - no authentication in explorer mode -->
-        </div>
+  <div class="job-detail">
+    <!-- Header Section, matching the Deploy UI's job page -->
+    <div class="dep-header">
+      <button type="button" class="back-link" @click="router.back()">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        <span>Back</span>
+      </button>
+
+      <div class="title-row">
+        <h1 class="dep-name">{{ props.job.address }}</h1>
+        <StatusPill :status="jobStatusString" />
+      </div>
+
+      <p v-if="(props.job.timeStart && formatStartTime) || jobDurationData" class="id-line">
+        <span v-if="props.job.timeStart && formatStartTime">Started {{ formatStartTime(props.job.timeStart) }}</span>
+        <template v-if="jobDurationData">
+          <span v-if="props.job.timeStart && formatStartTime" class="id-sep">·</span>
+          <span class="nowrap">
+            <SecondsFormatter :seconds="jobDurationData.actualSeconds" :showSeconds="true" />
+          </span>
+        </template>
+      </p>
+
+      <!-- Tab bar (segmented control) -->
+      <div class="dep-tabs">
+        <button
+          v-for="tab in availableTabs"
+          :key="tab"
+          type="button"
+          class="dep-tab"
+          :class="{ 'is-active': activeTab === tab }"
+          @click="activeTab = tab"
+        >
+          {{ getTabLabel(tab) }}
+        </button>
       </div>
     </div>
 
     <!-- Tab Content -->
     <div class="p-5">
       <!-- Overview Tab -->
-      <div v-if="activeTab === 'overview'">
+      <div v-if="activeTab === 'overview'" class="tab-pane">
         <!-- Job Details Section -->
         <div>
           <h2 class="title is-5 mb-3">Job details</h2>
-          <div class="box is-borderless">
+          <div class="section-card">
             <div class="table-container">
-              <table class="table is-fullwidth mb-0">
+              <table class="table is-fullwidth mb-0 details-table">
               <tbody>
                 <tr>
                   <td>Deployer</td>
@@ -126,7 +131,7 @@
         </div>
 
         <!-- On-chain activity, hidden when the API has no events endpoint -->
-        <div class="mt-6" v-if="jobEventsSupported && !loadingJobEvents">
+        <div v-if="jobEventsSupported && !loadingJobEvents">
           <JobEventTimeline :events="jobEvents" :markets="testgridMarkets" />
         </div>
 
@@ -168,7 +173,7 @@ import JobResult from "~/components/Job/Result.vue";
 import JobDefinitionTab from "~/components/Job/Tabs/JobDefinition.vue";
 import JobEventTimeline from "~/components/Job/EventTimeline.vue";
 import SecondsFormatter from "~/components/SecondsFormatter.vue";
-import StatusTag from "~/components/Common/StatusTag.vue";
+import StatusPill from "~/components/Common/StatusPill.vue";
 
 import { useTemplates } from "~/composables/useTemplates";
 import { useToast } from "vue-toastification";
@@ -180,13 +185,12 @@ import { useJobEvents } from "~/composables/jobs/useJobEvents";
 import ChevronDownIcon from '@/assets/img/icons/chevron-down.svg?component';
 import ClockIcon from '@/assets/img/icons/clock.svg?component';
 import SquareIcon from '@/assets/img/icons/square.svg?component';
-import ArrowUpIcon from '@/assets/img/icons/arrow-up.svg?component';
 import RunningIcon from '@/assets/img/icons/status/running.svg?component';
 import StoppedIcon from '@/assets/img/icons/status/stopped.svg?component';
 import FailedIcon from '@/assets/img/icons/status/failed.svg?component';
 import QueuedIcon from '@/assets/img/icons/status/queued.svg?component';
 import DoneIcon from '@/assets/img/icons/status/done.svg?component';
-import { useStatus } from '~/composables/useStatus';
+import { useStatus, normalizeStatus } from '~/composables/useStatus';
 
 import type { UseModal } from "~/composables/jobs/useModal";
 import type { Endpoints, UseJob } from "~/composables/jobs/useJob";
@@ -408,6 +412,14 @@ const formattedDockerImage = computed(() => {
     return dockerImage.value.substring(10); // Length of "docker.io/"
   }
   return dockerImage.value;
+});
+
+// Completed jobs report whether they succeeded; otherwise the numeric state.
+const jobStatusString = computed(() => {
+  if (props.job.state === 2 && props.job.jobStatus) {
+    return props.job.jobStatus === "success" ? "SUCCESS" : "FAILED";
+  }
+  return normalizeStatus(props.job.state);
 });
 
 const jobDefinitionId = computed(() => {
@@ -893,106 +905,112 @@ const { getStatusClass: statusClass } = useStatus();
 </script>
 
 <style lang="scss" scoped>
-// Improved header layout
-.deployment-header > .is-flex {
+/* Header sits on the page ground, tab content below in cards, matching the
+   Deploy UI's job page. */
+.job-detail {
+  color: $text;
+}
+
+.dep-header {
+  padding: 1.25rem 1.5rem 0;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  color: $text-muted;
+  font-family: $family-sans-serif;
+  font-size: 0.9rem;
+  transition: color 0.15s ease;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    color: $text;
+  }
+}
+
+html.dark-mode .back-link:hover {
+  color: $white;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
   flex-wrap: wrap;
-  gap: 1rem;
 }
 
-.header-left-section {
-  min-width: 0; // Allow text to truncate
-  flex: 1;
+.dep-name {
+  font-family: $title-family;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0;
+  color: $text;
+  /* Addresses have no spaces, so allow breaking anywhere */
+  word-break: break-all;
 }
 
-.header-title-section {
-  min-width: 0; // Allow text to truncate
-  max-width: 400px; // Prevent extremely long addresses from stretching too much
-  display: flex !important;
-  flex-direction: column !important;
+html.dark-mode .dep-name {
+  color: $white;
 }
 
-.header-title-section .title {
-  display: block !important;
-  margin-bottom: 0.25rem !important;
+.id-line {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: $text-muted;
 }
 
-.job-images-list {
+.id-line .is-family-monospace {
+  word-break: break-all;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+/* ---- Tab content ---- */
+.tab-pane {
   display: flex;
   flex-direction: column;
+  gap: 2.25rem;
 }
 
-.header-title-section .subtitle {
-  display: block !important;
-  word-break: break-all; // Allow long addresses to wrap
-  line-height: 1.2;
-  margin-top: 0 !important;
+/* Label column of the details table. */
+.details-table td:first-child {
+  width: 1%;
+  white-space: nowrap;
+  color: $text-muted;
 }
 
-.deployment-header .status-tag { 
-  white-space: nowrap; 
-  flex-shrink: 0;
+/* Empty-state notifications inside tabs. */
+.notification.is-light.has-text-centered {
+  border-radius: 14px;
 }
 
-// Mobile responsive
 @media screen and (max-width: 768px) {
-  .deployment-header > .is-flex {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    flex-wrap: nowrap !important;
+  .dep-header {
+    padding: 1rem 1rem 0;
   }
-  
-  .header-left-section {
-    width: 100%;
-    margin-bottom: 1rem;
-  }
-  
-  .deployment-tabs {
-    width: 100% !important;
-    justify-content: flex-start;
-    margin-top: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  
-  .header-title-section {
-    max-width: none;
-  }
-  
-  .header-title-section .subtitle {
-    font-size: 0.75rem;
-  }
-  
-  .tab-button {
-    font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
-  }
-}
 
-// Extra small screens
-@media screen and (max-width: 480px) {
-  .deployment-tabs {
-    gap: 0.25rem;
+  .dep-name {
+    font-size: 1.35rem;
   }
-  
-  .tab-button {
-    font-size: 0.75rem;
-    padding: 0.375rem 0.5rem;
-  }
-}
-
-// Job header styling - matches deployment page
-.job-header {
-  border-bottom: 1px solid $grey-lighter;
-}
-
-html.dark-mode .job-header {
-  border-bottom-color: $grey-dark;
-}
-
-
-.box.is-borderless {
-  padding: 0 !important;
 }
 
 // Remove old grid styling - now using tables
@@ -1495,11 +1513,6 @@ html.dark-mode {
       border: 1px solid #444;
       padding: 1rem;
     }
-  }
-
-  .box {
-    background-color: #363636;
-    border-color: #555;
   }
 
   .job-title-col {

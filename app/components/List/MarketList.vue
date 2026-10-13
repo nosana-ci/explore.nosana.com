@@ -37,6 +37,7 @@
       </div>
     </div>
     <div class="column is-narrow">
+      <input v-model="search" class="input" type="search" placeholder="Search GPUs">
     </div>
   </div>
   <div class="table-container">
@@ -235,15 +236,36 @@ watch(selectedMarket, (newValue: Market | null) => {
 const page: Ref<number> = ref(1);
 const perPage: Ref<number> = ref(25);
 
+const search = ref('');
+watch([search, tab], () => { page.value = 1; });
+
+const getMarketName = (market: Market) =>
+  testgridMarkets.value.find((tgm: any) => tgm.address === market.address.toString())?.name as string | undefined;
+
+// Sort key: the GPU model, ignoring host prefixes like "ember-drift NVIDIA 4090"
+const getSortKey = (market: Market) => {
+  const name = getMarketName(market);
+  if (!name) return `~${market.address.toString()}`; // unnamed markets last
+  const model = name.indexOf('NVIDIA');
+  return model > 0 ? `${name.slice(model)} ${name}` : name;
+};
+
 /**
  * Filters the list of markets by:
  * - The current tab (premium, community, others).
- * - VRAM requirements, if set.
+ * - The search query (name or address).
+ * Sorted by GPU series.
  */
 const filteredMarkets = computed(() => {
   if (!props.markets || !props.markets.length) return props.markets;
-  
+
+  const query = search.value.trim().toLowerCase();
+
   return props.markets.filter((market) => {
+    if (query && !`${getMarketName(market) ?? ''} ${market.address.toString()}`.toLowerCase().includes(query)) {
+      return false;
+    }
+
     // Get market info regardless of type
     const marketInfo = testgridMarkets.value.find((tgm: any) => tgm.address === market.address.toString());
     
@@ -271,7 +293,7 @@ const filteredMarkets = computed(() => {
     }
 
     return true;
-  });
+  }).sort((a, b) => getSortKey(a).localeCompare(getSortKey(b), undefined, { numeric: true }));
 });
 
 // New computed property to determine if a market is compatible
@@ -420,7 +442,7 @@ function handleLinkClick(event: MouseEvent, navigate: Function) {
 
   ul {
     position: static;
-    border-bottom: 3px solid $grey-lighter;
+    border-bottom: 3px solid $border-soft;
     margin-bottom: 0;
     width: 100%;
   }
@@ -493,7 +515,7 @@ function handleLinkClick(event: MouseEvent, navigate: Function) {
 
         &::before {
           background: $white !important;
-          border: 1px solid $grey-lighter !important;
+          border: 1px solid $border-soft !important;
           border-radius: 4px !important;
           color: $grey-dark !important;
           font-size: 0.75rem !important;

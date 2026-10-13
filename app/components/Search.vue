@@ -20,7 +20,7 @@
         class="dropdown-menu is-active is-fullwidth"
         role="menu"
       >
-        <div class="dropdown-content has-background-white-bis">
+        <div class="dropdown-content">
           <a
             v-for="(item, index) in searchItems"
             :key="item"

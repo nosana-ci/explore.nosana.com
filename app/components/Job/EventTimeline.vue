@@ -2,59 +2,60 @@
   <div>
     <h2 class="title is-5 mb-3">Activity</h2>
 
-    <div class="box is-borderless">
-      <p
-        v-if="!items.length"
-        class="has-text-grey has-text-centered py-5 mb-0 is-size-7"
-      >
+    <div class="lc-card">
+      <p v-if="!items.length" class="lc-empty">
         No on-chain events recorded for this job yet.
       </p>
 
-      <ol v-else class="event-timeline">
-        <li v-for="item in items" :key="item.key" class="event">
-          <span class="event-marker" :class="`is-${item.tone}`"></span>
+      <ol v-else class="lifecycle">
+        <li v-for="item in items" :key="item.key" class="lc-stage">
+          <!-- Marker + connecting rail -->
+          <div class="lc-rail">
+            <StatusMark :tone="item.tone" :label="item.title" />
+          </div>
 
-          <div class="event-body">
-            <div class="event-heading">
-              <span class="event-title">{{ item.title }}</span>
-              <a
-                :href="solscanTxUrl(item.event.signature, isDevnet)"
-                target="_blank"
-                rel="noopener"
-                class="event-tx is-size-7"
-                :title="item.event.signature"
+          <!-- Stage content -->
+          <div class="lc-content">
+            <div class="lc-top">
+              <span class="lc-title">{{ item.title }}</span>
+              <span
+                class="lc-time"
+                :title="
+                  item.event.blockTime
+                    ? formatEventTimestamp(item.event.blockTime)
+                    : ''
+                "
               >
-                {{ shortAddress(item.event.signature) }}
-                <span class="icon is-small borderless">
-                  <ArrowSquareUpRightIcon />
-                </span>
-              </a>
+                <template v-if="item.event.blockTime">{{
+                  formatEventTimeAgo(item.event.blockTime)
+                }}</template>
+                <template v-else>Slot {{ item.event.slot ?? "—" }}</template>
+              </span>
             </div>
 
-            <p class="event-time is-size-7">
-              <template v-if="item.event.blockTime">
-                {{ formatEventTimestamp(item.event.blockTime) }}
-                <span class="has-text-grey"
-                  >({{ formatEventTimeAgo(item.event.blockTime) }})</span
-                >
-              </template>
-              <template v-else>
-                Slot {{ item.event.slot ?? "unknown" }}
-              </template>
-            </p>
-
-            <p v-if="item.detail" class="event-detail is-size-7 mb-0">
-              {{ item.detail.label }}
+            <p v-if="item.detail" class="lc-detail">
+              <span class="lc-detail-label">{{ item.detail.label }}</span>
               <nuxt-link
                 v-if="item.detail.to"
                 :to="item.detail.to"
-                class="has-text-link is-family-monospace"
+                class="lc-detail-link"
                 :title="item.detail.value"
               >
                 {{ item.detail.text }}
               </nuxt-link>
-              <span v-else>{{ item.detail.text }}</span>
+              <span v-else class="lc-detail-val">{{ item.detail.text }}</span>
             </p>
+
+            <a
+              :href="solscanTxUrl(item.event.signature, isDevnet)"
+              target="_blank"
+              rel="noopener"
+              class="lc-tx"
+              :title="item.event.signature"
+            >
+              <ArrowSquareUpRightIcon />
+              View on Solscan
+            </a>
           </div>
         </li>
       </ol>
@@ -67,11 +68,11 @@ import {
   buildJobTimeline,
   formatEventTimeAgo,
   formatEventTimestamp,
-  shortAddress,
   solscanTxUrl,
   type JobEvent,
   type MarketRef,
 } from "~/utils/jobEvents";
+import StatusMark from "~/components/Common/StatusMark.vue";
 import ArrowSquareUpRightIcon from "@/assets/img/icons/arrow-square-up-right.svg?component";
 
 const props = defineProps<{
@@ -84,106 +85,149 @@ const props = defineProps<{
 const config = useRuntimeConfig();
 const isDevnet = config.public.network === "devnet";
 
-const items = computed(() => buildJobTimeline(props.events, props.markets));
+// Newest first, matching the Deploy UI. The builder keeps the indexer's
+// chronological order; reading direction is this component's decision.
+const items = computed(() =>
+  buildJobTimeline(props.events, props.markets).reverse(),
+);
 </script>
 
 <style lang="scss" scoped>
-.event-timeline {
+@use "@/assets/styles/mixins.scss" as *;
+
+/* A narrow timeline reads far better capped than stretched across the page. */
+.lc-card {
+  @include soft-panel;
+  max-width: 620px;
+  padding: 20px 22px;
+}
+
+.lc-empty {
+  text-align: center;
+  color: $text-muted;
+  padding: 1.75rem 1rem;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* ---- Lifecycle timeline ---- */
+.lifecycle {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.event {
-  display: flex;
-  gap: 0.75rem;
-  padding-bottom: 1.25rem;
+.lc-stage {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 12px;
   position: relative;
-
-  // Rail connecting the markers.
-  &:not(:last-child)::before {
-    background-color: $grey-lighter;
-    bottom: 0.25rem;
-    content: "";
-    left: 0.28rem;
-    position: absolute;
-    top: 0.9rem;
-    width: 1px;
-  }
-
-  &:last-child {
-    padding-bottom: 0;
-  }
+  padding-bottom: 22px;
+  align-items: start;
 }
 
-.event-marker {
-  background-color: $grey-light;
-  border-radius: 50%;
-  flex: 0 0 auto;
-  height: 0.625rem;
-  margin-top: 0.3rem;
-  width: 0.625rem;
-  z-index: 1;
-
-  &.is-success {
-    background-color: $secondary;
-  }
-  &.is-info {
-    background-color: $info;
-  }
-  &.is-warning {
-    background-color: $warning;
-  }
-  &.is-danger {
-    background-color: $danger;
-  }
+.lc-stage:last-child {
+  padding-bottom: 0;
 }
 
-.event-body {
-  min-width: 0;
+/* The rail joins one stage's mark to the next. */
+.lc-stage:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  transform: translateX(-50%);
+  top: 24px;
+  bottom: -3px;
+  width: 2px;
+  background: $grey-lighter;
 }
 
-.event-heading {
-  align-items: baseline;
+html.dark-mode .lc-stage:not(:last-child)::before {
+  background: rgba($white, 0.12);
+}
+
+.lc-rail {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  justify-content: center;
+  /* Sits the mark on the title's optical centre. */
+  padding-top: 7px;
 }
 
-.event-title {
-  font-weight: $weight-semibold;
+/* ---- Content ---- */
+.lc-content {
+  min-width: 0;
+  padding-top: 3px;
 }
 
-.event-tx {
-  color: $grey;
+.lc-top {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.lc-title {
+  font-family: $title-family;
+  font-weight: 600;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: $text;
+}
+
+.lc-time {
+  margin-left: auto;
+  flex: none;
+  font-size: 0.72rem;
+  color: $text-muted;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.lc-detail {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: $grey-dark;
+}
+
+.lc-detail-label {
+  color: $text-muted;
+  margin-right: 6px;
+}
+
+.lc-detail-link {
   font-family: $family-monospace;
+  color: $link;
 
   &:hover {
-    color: $link;
-  }
-
-  .icon {
-    vertical-align: middle;
+    text-decoration: underline;
   }
 }
 
-.event-time,
-.event-detail {
-  color: $text-dark;
-  margin-bottom: 0;
+.lc-tx {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: $text-muted;
+  margin-top: 7px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  &:hover {
+    color: $secondary;
+  }
 }
 
 html.dark-mode {
-  .event:not(:last-child)::before {
-    background-color: $grey-dark;
-  }
-
-  .event-title {
+  .lc-title {
     color: $white;
   }
 
-  .event-time,
-  .event-detail {
+  .lc-detail {
     color: $grey-light;
   }
 }
