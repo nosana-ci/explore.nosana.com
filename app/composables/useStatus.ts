@@ -75,7 +75,7 @@ export function getStatusTone(status: string | number): StatusTone {
 }
 
 const TONE_CLASSES: Record<StatusTone, string> = {
-  live: 'is-success',
+  live: 'is-info',
   ok: 'is-success',
   warn: 'is-warning',
   danger: 'is-danger',
