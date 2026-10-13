@@ -11,15 +11,17 @@
   </div>
 
   <!-- Jobs posted by this deployer -->
-  <DeploymentList
-    :per-page="limit"
-    :total-jobs="totalJobs"
-    v-model:page="page"
-    v-model:state="state"
-    :loading-jobs="loadingJobs"
-    title="Jobs Posted"
-    :jobs="jobs?.jobs || []"
-  />
+  <div class="box">
+    <DeploymentList
+      :per-page="limit"
+      :total-jobs="totalJobs"
+      v-model:page="page"
+      v-model:state="state"
+      :loading-jobs="loadingJobs"
+      title="Jobs Posted"
+      :jobs="jobs?.jobs || []"
+    />
+  </div>
   </div>
 </template>
 

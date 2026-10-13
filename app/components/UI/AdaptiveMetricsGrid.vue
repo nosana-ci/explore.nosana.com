@@ -208,10 +208,9 @@ export default defineComponent({
 
 <style scoped>
 .quick-detail-item{padding:0.2rem 0.5rem;border-radius:4px;display:flex;flex-direction:column;height:100%}
-.quick-detail-label{font-size:.7rem;font-weight:600;color:#7a7a7a;text-transform:uppercase;margin-bottom:.1rem}
-.quick-detail-value{font-size:.85rem;font-weight:500;color:#363636;word-break:break-word}
+.quick-detail-label{font-size:.7rem;font-weight:600;color:$text-muted;text-transform:uppercase;margin-bottom:.1rem}
+.quick-detail-value{font-size:.85rem;font-weight:500;color:$grey-darker;word-break:break-word}
 .quick-detail-column{margin-bottom:0!important}
 .no-padding{padding:0!important}
-html.dark-mode .quick-detail-item .quick-detail-label{color:#b0b0b0}
-html.dark-mode .quick-detail-item .quick-detail-value{color:#ffffff}
+html.dark-mode .quick-detail-item .quick-detail-value{color:$white}
 </style>

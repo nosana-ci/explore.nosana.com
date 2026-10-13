@@ -473,7 +473,7 @@ const nodeRanking: ComputedRef<NodeRanking | null> = computed(() => {
   .quick-detail-label {
     font-size: 0.7rem;
     font-weight: 600;
-    color: #7a7a7a;
+    color: $text-muted;
     text-transform: uppercase;
     margin-bottom: 0.1rem;
     display: inline-flex; 
@@ -483,11 +483,15 @@ const nodeRanking: ComputedRef<NodeRanking | null> = computed(() => {
   .quick-detail-value {
     font-size: 0.85rem;
     font-weight: 500;
-    color: #363636;
+    color: $grey-darker;
     word-break: break-word;
 
+    html.dark-mode & {
+      color: $white;
+    }
+
     .icon-text {
-      color: #363636;
+      color: inherit;
     }
     .address {
         font-size: 0.8rem; 

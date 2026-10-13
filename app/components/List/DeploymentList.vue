@@ -1,7 +1,7 @@
 <template>
   <div class="deployment-list-container" ref="containerRef" :style="{ minHeight: dynamicMinHeight }">
   <div class="columns is-vcentered">
-    <div class="column">
+    <div class="column is-narrow">
       <h2 class="title" :class="{ 'is-5': small, 'is-4': !small }">
         {{ title ? title : 'Jobs' }}
       </h2>
@@ -13,47 +13,16 @@
             {{ Math.min(page * perPage, totalJobs) }} of</span>
           {{ totalJobs }} jobs
         </div>
-        <div class="is-flex is-flex-wrap-wrap state-filter">
-          <div class="mr-2 my-2" v-if="!states || states.length >= 2">
-            <a class="button is-primary is-outlined" :class="{
-              'is-hovered': state === null,
-              'is-small': small,
-            }" @click="changeState(null)">
-              <b><span>All</span></b>
-            </a>
-          </div>
-          <div class="mr-2 my-2" v-if="!states || states.includes(2)">
-            <a class="button" :class="[getFilterButtonClass(2), {
-              'is-hovered': state === 2,
-              'is-small': small,
-            }]" @click="changeState(2)">
-              <b><span>Completed</span></b>
-            </a>
-          </div>
-          <div class="mr-2 my-2" v-if="!states || states.includes(1)">
-            <a class="button" :class="[getFilterButtonClass(1), {
-              'is-hovered': state === 1,
-              'is-small': small,
-            }]" @click="changeState(1)">
-              <b><span>Running</span></b>
-            </a>
-          </div>
-          <div class="mr-2 my-2" v-if="!states || states.includes(0)">
-            <a class="button" :class="[getFilterButtonClass(0), {
-              'is-hovered': state === 0,
-              'is-small': small,
-            }]" @click="changeState(0)">
-              <b><span>Queued</span></b>
-            </a>
-          </div>
-          <div class="mr-2 my-2" v-if="!states || states.includes(3)">
-            <a class="button" :class="[getFilterButtonClass(3), {
-              'is-hovered': state === 3,
-              'is-small': small,
-            }]" @click="changeState(3)">
-              <b><span>Stopped</span></b>
-            </a>
-          </div>
+        <div class="seg-tabs state-filter my-2">
+          <button
+            v-for="filter in stateFilters"
+            :key="String(filter.state)"
+            type="button"
+            :class="{ 'is-active': state === filter.state }"
+            @click="changeState(filter.state)"
+          >
+            {{ filter.label }}
+          </button>
         </div>
       </div>
     </div>
@@ -181,7 +150,6 @@ import JobPrice from "~/components/Job/Price.vue";
 import CurrentMarketPrice from "~/components/Market/CurrentPrice.vue";
 import SecondsFormatter from "~/components/SecondsFormatter.vue";
 import { useAPI } from "~/composables/useAPI";
-import { useStatus } from '~/composables/useStatus';
 
 // Fetch stats data needed for CurrentMarketPrice
 const { data: stats, pending: loadingStats } = useAPI('/api/stats');
@@ -195,15 +163,6 @@ interface ExtendedJob extends Omit<Job, 'market' | 'timeout'> {
   timeout?: number;
 }
 
-// Use global status system for consistent colors
-const { getStatusClass } = useStatus();
-
-// Get button classes for filter buttons
-const getFilterButtonClass = (state: number) => {
-  const statusClass = getStatusClass(state);
-  // Convert status class to button class (remove 'is-' prefix and add 'is-outlined')
-  return `${statusClass} is-outlined`;
-};
 
 // Fetch markets data for centralized pricing
 const { data: testgridMarkets, pending: loadingTestgridMarkets } = await useAPI('/api/markets', { default: () => [] });
@@ -247,6 +206,18 @@ const props = defineProps({
   },
 });
 const state = defineModel<number | null>('state', { default: null });
+
+// "All" stays available while there is more than one state to choose from.
+const stateFilters = computed(() => {
+  const all: Array<{ state: number | null; label: string }> = [
+    { state: 2, label: 'Completed' },
+    { state: 1, label: 'Running' },
+    { state: 0, label: 'Queued' },
+    { state: 3, label: 'Stopped' },
+  ];
+  const shown = all.filter((f) => !props.states || props.states.includes(f.state as number));
+  return !props.states || props.states.length >= 2 ? [{ state: null, label: 'All' }, ...shown] : shown;
+});
 const changeState = (newState: number | null) => {
   page.value = 1;
   state.value = newState;
@@ -359,17 +330,16 @@ watch(() => props.loadingJobs, (isLoading, wasLoading) => {
 
 .max-duration {
   font-size: 0.85em;
-  color: $grey;
+  color: $text-muted;
   white-space: nowrap;
 }
 
 // Ensure status icons have proper colors even in small mode
 :deep(.status-icon-wrap.status-tag) {
   &.is-success, &.is-success svg { color: $success !important; }
-  &.is-info, &.is-info svg { color: $info !important; }
   &.is-warning, &.is-warning svg { color: $warning !important; }
   &.is-danger, &.is-danger svg { color: $danger !important; }
-  &.is-dark, &.is-dark svg { color: $dark !important; }
+  &.is-dark, &.is-dark svg { color: $status-neutral !important; }
 }
 
 .dark-mode {

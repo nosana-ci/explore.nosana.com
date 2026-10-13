@@ -25,16 +25,18 @@
   </div>
   
   <!-- Jobs ran list moved from HostInfo to here -->
-  <DeploymentList
-    :per-page="limit"
-    :total-jobs="totalJobs"
-    v-model:page="page"
-    v-model:state="state"
-    :loading-jobs="loadingJobs"
+  <div class="box">
+    <DeploymentList
+      :per-page="limit"
+      :total-jobs="totalJobs"
+      v-model:page="page"
+      v-model:state="state"
+      :loading-jobs="loadingJobs"
       title="Jobs Ran"
-    :jobs="jobs?.jobs || []"
-    :states="[1, 2]"
-  />
+      :jobs="jobs?.jobs || []"
+      :states="[1, 2]"
+    />
+  </div>
   </div>
 </template>
 
